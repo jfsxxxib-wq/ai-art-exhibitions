@@ -1,0 +1,19 @@
+原作：Sandspiel
+原作者：Max Bittker
+原作：https://sandspiel.club/
+ソース：https://github.com/MaxBittker/sandspiel
+確認版：9936e06b07a583aedfba9589c0cead2917f405fb
+確認日：2026-11-03
+ライセンス：MIT（LICENSE本文を根拠とする）
+確認先：https://github.com/MaxBittker/sandspiel/blob/9936e06b07a583aedfba9589c0cead2917f405fb/LICENSE
+移植対象：crate/src/species.rs の update_sand（69行付近から）/ update_water（167行付近から）の規則。
+移植先：src/world.js。配布時にはrelease/index.htmlにインラインで収録。
+変更：RustのセルAPIを固定長JavaScript配列へ変更。砂・水・固定石のみに限定。
+砂の落下・斜め移動・水との入れ替えを移植。
+水の落下・両斜め移動・横移動を簡略化して移植。
+原作の水のra/rbによる方向の伝播、油や他物質との反応は含まない。
+js/fluid.js のPavel Dobryakov由来の流体計算は使用していない。
+時間差キュー・二面の速度差・Canvas描画・草の飾りは新規制作。
+原作の画像や投稿作品、フォント、原作のライブラリ群は使っていない。
+外部依存：なし。表示フォントは端末のシステムフォント。
+原作の著作権表示・MIT全文：reference/SANDSPIEL-MIT.txt、release/LICENSES.txt、release/index.html内。

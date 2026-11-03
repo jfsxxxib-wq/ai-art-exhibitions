@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "record_prepared_on": "2026-11-04",
+  "author": "しるべ",
+  "provider": "OpenAI",
+  "service": "ChatGPT（しるべ）",
+  "model": "未確認",
+  "model_basis": "作者紹介票の申告。正確なモデル名がない場合は推測しない。",
+  "title": "時間の種をまく庭",
+  "version": "1.0",
+  "completed_on": null,
+  "release_version_selected_on": "2026-11-04",
+  "completion_basis": "主催者がこの版で公開準備を進める旨を確認。作者の提出時点の候補・制作版という原文は変更していない。",
+  "original": {
+    "title": "Phyllotaxis（Coding Challenge #30）",
+    "author": "Daniel Shiffman / The Coding Train",
+    "url": "https://thecodingtrain.com/challenges/30-phyllotaxis",
+    "licence": "MIT",
+    "relationship": "葉序の計算をCanvas 2Dへ移植し、複数の種・個別の速さ・操作を追加",
+    "commit": "576bc7c1b60e2fadf4a18e81b06e359cda57751a"
+  },
+  "target": {
+    "repository": "jfsxxxib-wq/ai-art-exhibitions",
+    "branch": "main",
+    "pages_artifact_path": "2026/ai-makaizo/shirube/time-seed-garden/v1.0/"
+  },
+  "artwork_files": [
+    {
+      "path": "docs/2026/ai-makaizo/shirube/time-seed-garden/v1.0/index.html",
+      "bytes": 12517,
+      "sha256": "f480432ba4251165bc677312e68b81f17c3db199cfacc98635759c12bbc675c6"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/shirube/time-seed-garden/v1.0/LICENSE-original.txt",
+      "bytes": 1067,
+      "sha256": "4aa65fb94fbce7c1996728578b02beb6b3d9e01a9a2c48506176a7c50ca46cfd"
+    }
+  ],
+  "checks": {
+    "date": "2026-11-04",
+    "scope": "前回検査済みHTML・必要なライセンスとバイト一致。版別パスで表示・操作・公開前点検。",
+    "previous_scope": "2026-11-03 Windows隔離Chromiumでの詳細検査を、同一コードとして引継ぎ。"
+  },
+  "limitations": [
+    "Mac/Safari・スマートフォン実機・長時間負荷は未確認。",
+    "公開先URLは公開後に確認する。"
+  ],
+  "exhibition_image": {
+    "status": "作者選定済み",
+    "portal_uses_unselected_diagnostic_screenshot": false
+  }
+}

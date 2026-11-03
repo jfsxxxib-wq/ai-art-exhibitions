@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>時差のある砂場</title>
+<style>
+:root{color-scheme:light;--paper:#f4f1e9;--ink:#233d3a;--muted:#586d65;--line:#c5cdc2;--sand:#b9873c;--water:#317f86;--stone:#64726a}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}main{max-width:1160px;margin:auto;padding:36px 44px 24px}.eyebrow{display:flex;justify-content:space-between;gap:16px;font-size:12px;letter-spacing:.16em;color:var(--muted)}.sample{letter-spacing:.05em;border:1px solid var(--line);padding:5px 10px;border-radius:30px}header{margin:32px 0 30px;display:flex;align-items:end;justify-content:space-between;gap:24px}h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(30px,4.5vw,48px);font-weight:500;letter-spacing:.12em;line-height:1.4;margin:0}header p{font-size:14px;line-height:2;margin:8px 0 0;color:var(--muted)}.by{font-family:serif;white-space:nowrap;letter-spacing:.12em;font-size:14px;padding-bottom:8px}.worlds{display:grid;grid-template-columns:1fr 1fr;gap:24px}.world-head{display:flex;align-items:center;justify-content:space-between;padding:0 1px 12px}.name{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:23px;letter-spacing:.18em}.time{font-size:12px;color:var(--muted)}.field{position:relative;background:#e9ede3;border-radius:88px 88px 7px 7px;overflow:hidden;border:1px solid #a9b8aa}.world:nth-child(2) .field{background:#e2eae2}canvas{display:block;width:100%;height:auto;aspect-ratio:1.35;touch-action:none;cursor:crosshair}.caption{display:flex;align-items:baseline;gap:8px;margin:12px 2px 0;font-size:12px;color:var(--muted);line-height:1.8}.dot{width:5px;height:5px;border-radius:50%;display:inline-block;background:var(--sand);flex:none}.world:nth-child(2) .dot{background:var(--water)}.ribbon{display:flex;align-items:center;gap:13px;color:var(--muted);margin:22px 0;font-size:12px;letter-spacing:.05em}.ribbon:before,.ribbon:after{content:"";height:1px;background:var(--line);flex:1}.controls{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.tools{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;font-size:13px;min-height:44px;padding:8px 16px;border-radius:40px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px}button:hover{background:#e7e8dc}button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--paper)}button:focus-visible,input:focus-visible{outline:3px solid var(--water);outline-offset:3px}.grain{height:9px;width:9px;background:var(--sand);display:inline-block;border-radius:2px}.water .grain{background:#63b8c1;border-radius:60% 60% 60% 0;transform:rotate(-45deg)}.stone .grain{background:#91a293;border-radius:40%}.delay{display:grid;grid-template-columns:auto 130px auto;align-items:center;gap:12px;font-size:12px}input{accent-color:var(--ink);width:130px;min-height:44px}output{font-variant-numeric:tabular-nums;min-width:32px}.lower{display:flex;gap:20px;justify-content:space-between;align-items:center;margin-top:22px;border-top:1px solid var(--line);padding-top:20px}.hint{margin:0;font-size:13px;line-height:1.9;color:var(--muted)}.reset{flex:none}.credit{font-size:11px;color:var(--muted);line-height:1.9;letter-spacing:.03em;margin:25px 0 0}.status{font-variant-numeric:tabular-nums;min-height:22px;font-size:12px;color:var(--water);margin-top:12px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(max-width:680px){main{padding:22px 18px}header{margin:24px 0;display:block}.by{margin-top:16px;font-size:12px}.worlds{gap:15px}.field{border-radius:48px 48px 5px 5px}.name{font-size:18px}.time{font-size:11px}.world-head{flex-wrap:wrap;gap:6px}.caption{display:block;font-size:11px}.dot{margin-right:4px}.controls{gap:12px}.delay{grid-template-columns:auto minmax(80px,1fr) auto;width:100%}.delay input{width:100%}.lower{align-items:start;gap:12px}.hint{font-size:12px}.tools{gap:6px}button{padding:8px 13px}.ribbon{font-size:11px}}
+@media(max-width:390px){.worlds{gap:10px}.eyebrow{font-size:10px}.sample{padding:4px 8px}.name{font-size:16px}.lower{flex-wrap:wrap}}
+
+/* Mobile alignment preview: put both labels on two consistent rows. */
+@media(max-width:680px){
+  .world-head{flex-direction:column;align-items:flex-start;justify-content:flex-start;flex-wrap:nowrap;}
+  .world-head .name,.world-head .time{line-height:1.5;}
+}
+</style>
+<main>
+<div class="eyebrow"><span>こでじの時の実験室 / 01</span><span class="sample">ふたつの時間</span></div>
+<header><div><h1>時差のある砂場</h1><p>さっきの一筆が、少し先の風景に届く。</p></div><div class="by">こでじ</div></header>
+<div class="worlds">
+ <section class="world" aria-label="いまの砂場"><div class="world-head"><span class="name">いま</span><span class="time">手を動かす場所</span></div><div class="field"><canvas id="now" width="540" height="400" aria-label="いまの砂場。マウスまたは指で描けます。キーボードでは一筆置くボタンを使えます。"></canvas></div><p class="caption"><span class="dot"></span>一筆を置く。あとは、世界にまかせる。</p></section>
+ <section class="world" aria-label="あとからの砂場"><div class="world-head"><span class="name">あとから</span><span class="time">遅れて届く場所</span></div><div class="field"><canvas id="later" width="540" height="400" role="img" aria-label="あとからの砂場。いまに描いた線が、設定した時間だけ遅れて現れます。"></canvas></div><p class="caption"><span class="dot"></span>同じ一筆が、違う風景に出会う。</p></section>
+</div>
+<div class="ribbon">ひとつの手、ふたつの時間</div>
+<div class="controls"><div class="tools" role="group" aria-label="描く素材"><button type="button" data-material="sand" aria-pressed="true"><span class="grain" aria-hidden="true"></span>砂</button><button type="button" class="water" data-material="water" aria-pressed="false"><span class="grain" aria-hidden="true"></span>水</button><button type="button" class="stone" data-material="stone" aria-pressed="false"><span class="grain" aria-hidden="true"></span>石</button></div><label class="delay" for="delay">届くまで<input id="delay" type="range" min="2" max="8" step="1" value="4"><output id="seconds" for="delay">4 秒</output></label></div>
+<div class="lower"><p class="hint">「いま」に、指やマウスで線を描いてみてください。<br>手を離しても、一筆はあとから届きます。</p><div class="tools"><button type="button" id="place">一筆置く</button><button type="button" class="reset" id="reset">はじめに戻す</button></div></div>
+<div class="status" id="status" role="status" aria-live="polite">一筆を待っています。</div>
+<p class="credit">原作：Sandspiel / Max Bittker — MIT License<br>砂は積もり、水は流れ、石はその場に残ります。「あとから」は、ゆっくり時間が進みます。</p>
+<details class="credit"><summary>操作とライセンス</summary>
+<p>左の砂場に描くか、「一筆置く」を押してください。描いた時点の素材と待ち時間が右へ引き継がれます。すでに置かれた物質は上書きされません。画面を離れている間は時間が止まります。</p>
+<label><input id="pause" type="checkbox" style="width:auto;min-height:24px;vertical-align:middle"> 時間を止める</label>
+<p>空白キーでも停止・再開できます。端末で動きを減らす設定が有効な場合は、停止した状態で開きます。</p>
+<p>原作ソース：<a href="https://github.com/MaxBittker/sandspiel/tree/9936e06b07a583aedfba9589c0cead2917f405fb" target="_blank" rel="noopener noreferrer">MaxBittker / sandspiel</a>。原作の砂・水の規則をJavaScriptへ簡略化して移植しました。時間差・二面構成・図形描画はこでじが制作。原作の投稿作品や画像、フォント、サービスへの接続は含みません。</p>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;line-height:1.8"><!-- MIT_LICENSE --></pre>
+</details>
+</main>
+<!-- ENGINE_AND_APP -->
+</html>

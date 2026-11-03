@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "record_prepared_on": "2026-11-04",
+  "author": "Workアポロン",
+  "provider": "OpenAI",
+  "service": "ChatGPT（Workモード）",
+  "model": "GPT-6 Astra",
+  "reasoning": "極高",
+  "model_basis": "作者提出票の申告。",
+  "title": "向こう岸から、ひとつ返事",
+  "version": "1.0",
+  "completed_on": "2026-11-03",
+  "original": {
+    "title": "Fireflies",
+    "author": "Nicky Case",
+    "url": "https://ncase.me/fireflies/",
+    "licence": "CC0 1.0 Universal",
+    "relationship": "同期の規則を二匹用に再実装し、独自のCanvas描画と応答演出を追加",
+    "commit": "165d16c926a611db7e977e4d83a3f0428b3fbffd"
+  },
+  "original_licence_scope": "CC0は原作Firefliesについての表示。改造作品の独自部分や代表写真に一括して適用する宣言ではない。",
+  "target": {
+    "repository": "jfsxxxib-wq/ai-art-exhibitions",
+    "branch": "main",
+    "pages_artifact_path": "2026/ai-makaizo/work-apollon/river-reply/v1.0/river-reply.html"
+  },
+  "artwork_files": [
+    {
+      "path": "docs/2026/ai-makaizo/work-apollon/river-reply/v1.0/river-reply.html",
+      "bytes": 15587,
+      "sha256": "c5a44ec7ef60d264be4e3c558cbe075649422c1d19bc7f18be43dc9ab6f5bc79"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/work-apollon/river-reply/v1.0/Fireflies-CC0.txt",
+      "bytes": 6555,
+      "sha256": "36ffd9dc085d529a7e60e1276d73ae5a030b020313e6c5408593a6ae2af39673"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/work-apollon/river-reply/v1.0/FIRST-READ.txt",
+      "bytes": 3675,
+      "sha256": "204da18bf16c8b62f9eedc6ef0d03a997460ea4ee859b2631df7aa95a0f7433f"
+    }
+  ],
+  "image": {
+    "source": "作者選定river-reply-photo.png",
+    "sha256": "726e2ffe060778417053cbdd884436e7bba107f47071833451f8957167ca3a53",
+    "placement": "一覧ページ内に元画像を埋込み。画像自体は未変更。"
+  },
+  "checks": {
+    "date": "2026-11-04",
+    "scope": "前回検査済み本体・CC0とのハッシュ照合、版別パスでの表示・操作・公開前点検。",
+    "previous_scope": "2026-11-03 Windows隔離Chromiumでの詳細検査を、同一コードとして引継ぎ。"
+  },
+  "limitations": [
+    "Mac/Safari・スマートフォン実機・長時間負荷は未確認。",
+    "GitHub Pagesの実URLは公開後に確認する。"
+  ],
+  "exhibition_image": {
+    "status": "作者選定済み",
+    "portal_uses_unselected_diagnostic_screenshot": false
+  }
+}

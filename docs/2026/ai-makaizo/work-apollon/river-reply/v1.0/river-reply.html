@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>向こう岸から、ひとつ返事｜Workアポロン</title>
+<style>
+:root{color-scheme:dark;--ivory:#eee6d3;--muted:#aaa99b;--gold:#d9c789}
+*{box-sizing:border-box}
+body{margin:0;background:#101d22;color:var(--ivory);font:15px/1.65 system-ui,"Yu Gothic",sans-serif}
+main{max-width:1070px;margin:0 auto;padding:clamp(18px,4.5vw,52px)}
+header,.controls,.credit{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.folio,.index{font:11px/1.6 ui-monospace,monospace;letter-spacing:.15em;color:var(--gold)}
+h1{font:400 clamp(25px,4vw,45px)/1.45 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;margin:14px 0 22px}
+.scene{position:relative;border:1px solid #465252;border-radius:3px;overflow:hidden;background:#253c45}
+canvas{display:block;width:100%;height:clamp(310px,48vh,500px)}
+.plate{position:absolute;left:18px;bottom:15px;color:#c3cfbb;font:11px/1.4 serif;letter-spacing:.22em;pointer-events:none}
+.controls{padding:20px 0;border-bottom:1px solid #43504d;justify-content:flex-start}
+button{border:1px solid #7b8271;background:transparent;color:var(--ivory);border-radius:24px;padding:9px 16px;min-height:44px;font:inherit;cursor:pointer}
+button:first-child{background:#ded6b8;color:#152326;border-color:#ded6b8}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid #fde598;outline-offset:3px}
+label{color:#c8c9ba;font-size:13px}select{font:inherit;color:#e0d8bc;background:#1b282c;border:1px solid #72796d;border-radius:5px;margin-left:6px;padding:6px}
+.hint{font-size:14px;color:#d2d3c7}.credit{font-size:12px;color:var(--muted);margin:20px 0 0}
+details{color:#bfc4b6;font-size:13px;margin-top:10px}summary{cursor:pointer;width:fit-content}a{color:#dbd3b6;text-underline-offset:3px}
+@media(max-width:520px){main{padding:20px 14px}.controls{gap:10px;padding:14px 0}button{font-size:14px;padding:8px 13px}label{flex-basis:100%}canvas{height:360px}.index{letter-spacing:.05em}}
+h1 span{display:inline-block}
+header{border-bottom:1px solid #35443f;padding-bottom:9px}
+.prologue{margin:-8px 0 17px;color:#c5c4b4;font:15px/1.8 "Yu Mincho","Hiragino Mincho ProN",serif}
+.controls{border-bottom:0;padding:16px 0 7px;gap:9px}
+button:disabled{cursor:default;opacity:.65}
+.signal{display:flex;align-items:center;gap:11px;margin:3px 0 0;border-bottom:1px solid #43504d;padding-bottom:12px;color:#bbbfaf;font-size:13px}
+.notes{display:flex;gap:6px}.notes i{width:8px;height:8px;border:1px solid #9b9c83;border-radius:50%}.notes i.lit{background:#edd791;border-color:#edd791;box-shadow:0 0 8px #e7bc5566}
+.plate{font-family:system-ui,sans-serif}.hint{min-height:1.7em}
+@media(max-width:520px){h1{font-size:clamp(22px,6.2vw,27px);letter-spacing:.025em}.prologue{font-size:14px}.credit{gap:6px 18px}.controls{padding-bottom:8px}}
+</style>
+<main>
+<header><span class="folio">RIVER NOCTURNE　/　01</span><span class="index">AI魔改造展　·　Workアポロン</span></header>
+<h1><span>向こう岸から、</span><wbr><span>ひとつ返事</span></h1>
+<p class="prologue">手前の岸から三度、好きな間合いで光を送ってください。</p>
+<div class="scene"><canvas aria-label="夕暮れの葦と水面。向こう岸にいる二匹の蛍の光が、水に短い金色の筋を落とす。"></canvas><span class="plate">手前の岸　/　送り火</span></div>
+<div class="controls"><button id="call" type="button">光を送る</button><button id="pause" type="button">時を止める</button><button id="reset" type="button" disabled>最初から</button></div>
+<div class="signal"><span>手前の灯</span><span class="notes" aria-hidden="true"><i></i><i></i><i></i></span><span id="count">0 / 3</span></div>
+<p class="hint" id="status" role="status">「光を送る」を押すと、手前の岸辺に一つ灯ります。</p>
+<div class="credit"><span>作画・制作　Workアポロン</span><span>原作　Nicky Case『Fireflies』</span></div>
+<details><summary>原作・素材と操作</summary><p>「光を送る」を自分の間合いで三度押してください。向こう岸の一匹がその間合いを返し、三度目だけ余分にひと呼吸おいて、もう一匹へ光が渡ります。「最初から」で途中でも新しい三度を始められます。「時を止める」で光と時計が一緒に止まります。キーボードではTabでボタンを選び、Enterまたはスペースで押せます。</p>
+<p>近くの蛍が光ると自分の時計が少し進む仕組みを原作から引き継ぎました。原作シミュレーション　Nicky Case ／ CC0 1.0。参照版 165d16c926a611db7e977e4d83a3f0428b3fbffd。背景・蛍・水面はCanvasの独自描画。外部ライブラリ・画像・録音の使用はありません。下記リンクは選んだ時だけ開きます。</p>
+<p><a href="https://ncase.me/fireflies/" target="_blank" rel="noopener noreferrer">原作を開く</a>　<a href="https://github.com/ncase/fireflies/blob/165d16c926a611db7e977e4d83a3f0428b3fbffd/js/index.js" target="_blank" rel="noopener noreferrer">参照コード</a>　<a href="https://github.com/ncase/fireflies/blob/165d16c926a611db7e977e4d83a3f0428b3fbffd/LICENSE.txt" target="_blank" rel="noopener noreferrer">原作ライセンス</a></p></details>
+</main>
+<script>
+'use strict';
+const canvas=document.querySelector('canvas'), ctx=canvas.getContext('2d');
+const backdrop=document.createElement('canvas'), bg=backdrop.getContext('2d');
+const call=document.querySelector('#call'), pause=document.querySelector('#pause');
+const reset=document.querySelector('#reset'), statusLine=document.querySelector('#status');
+const notes=[...document.querySelectorAll('.notes i')], count=document.querySelector('#count');
+// 向こう岸から、ひとつ返事 — Workアポロン
+// 本編の呼びかけと返事。時刻は作品内で進んだ秒数で受け取る。
+// 一時停止や非表示の時間は、この時計に含めない。
+class RiverRhythm {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.calls = [];
+    this.replies = [];
+    this.delivered = 0;
+  }
+
+  send(now) {
+    if (!Number.isFinite(now) || now < 0 || this.calls.length === 3) return false;
+    const previous = this.calls.at(-1);
+    if (previous !== undefined && now - previous < 0.27) return false;
+    this.calls.push(now);
+    if (this.calls.length === 3) {
+      const [first, second, third] = this.calls;
+      const answer = now + 1.2;
+      const lastLight = answer + (third - first) + 0.9;
+      this.replies = [
+        { at: answer, fly: 0 },
+        { at: answer + (second - first), fly: 0 },
+        { at: lastLight, fly: 0 },
+        { at: lastLight + 0.72, fly: 1 }
+      ];
+    }
+    return true;
+  }
+
+  advance(now, onLight) {
+    while (this.delivered < this.replies.length) {
+      const next = this.replies[this.delivered];
+      if (next.at > now) break;
+      this.delivered++;
+      onLight(next.fly, this.delivered);
+    }
+  }
+
+  get complete() {
+    return this.delivered === 4;
+  }
+}
+const rhythm=new RiverRhythm();
+let w,h,scale,t=0,frame=0,last=0,shoreAge=10,quietUntil=0,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,paused=reduced;
+const flies=[{x:.42,y:.51,phase:.3,period:3.65,age:.42},{x:.64,y:.465,phase:.7,period:3.92,age:1.3}];
+function dot(c,x,y,r,fill){c.fillStyle=fill;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+function random(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}}
+function gradient(c,top,bottom,stops){const g=c.createLinearGradient(0,top,0,bottom);for(const [p,color] of stops)g.addColorStop(p,color);return g}
+function paintBank(c,line,height,color,seed){
+  const rng=random(seed);c.fillStyle=color;c.beginPath();c.moveTo(0,line+height);
+  let y=line;
+  for(let x=0;x<=w+4;x+=4){y+=(rng()-.49)*height*.13;y+=(line-y)*.1;c.lineTo(x,y+height*(.36*Math.sin(x/w*11+seed)+.22*Math.cos(x/w*23)))}
+  c.lineTo(w,h);c.lineTo(0,h);c.fill();
+}
+function reeds(c,x,y,length,lean,color){
+  c.strokeStyle=color;c.lineWidth=Math.max(.7,length/72);c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+lean*.24,y-length*.7,x+lean,y-length);c.stroke();
+  c.fillStyle=color;c.beginPath();c.moveTo(x+lean*.22,y-length*.45);c.quadraticCurveTo(x+lean*.26+9,y-length*.68,x+lean*.33+13,y-length*.77);c.quadraticCurveTo(x+lean*.28+8,y-length*.54,x+lean*.22,y-length*.45);c.fill();
+  c.save();c.translate(x+lean,y-length);c.rotate(lean/(length||1));c.beginPath();c.ellipse(0,0,Math.max(1,length*.02),Math.max(2,length*.068),0,0,Math.PI*2);c.fill();c.restore();
+}
+function landscape(){
+  const c=bg,rng=random(13453),water=h*.63;
+  c.fillStyle=gradient(c,0,water,[[0,'#273644'],[.50,'#555464'],[.83,'#ac8277'],[1,'#e3aa84']]);c.fillRect(0,0,w,h);
+  // Thin slivers of cloud and a crescent, cut out on their own small surface.
+  for(let i=0;i<65;i++){let x=rng()*w,y=h*(.21+rng()*.34);c.fillStyle='rgba(250,197,158,'+(rng()*.08)+')';c.fillRect(x,y,6+rng()*w*.19,.5+rng())}
+  for(let i=0;i<40;i++)dot(c,rng()*w,rng()*h*.30,.35+rng()*.65,'rgba(246,226,195,'+(.18+rng()*.4)+')');
+  const moonX=w*.77,moonY=h*.20,mr=Math.min(w,h)*.035;
+  c.save();c.translate(moonX,moonY);c.rotate(.46);c.beginPath();c.arc(0,0,mr,0,Math.PI);c.bezierCurveTo(-mr*.5,mr*.63,mr*.57,mr*.63,mr,0);c.fillStyle='#e7d3af';c.fill();c.restore();
+  paintBank(c,h*.53,h*.065,'#666371',32);paintBank(c,h*.576,h*.045,'#444e58',18);paintBank(c,h*.603,h*.035,'#263f43',7);
+  for(let i=0;i<130;i++){let x=rng()*w;reeds(c,x,water,h*(.017+rng()*.064),rng()*8-3,'#2a4244')}
+  c.fillStyle=gradient(c,water,h,[[0,'#8d7976'],[.12,'#6b696c'],[.39,'#45575a'],[.70,'#283f45'],[1,'#152c32']]);c.fillRect(0,water,w,h-water);
+  for(let i=0;i<700;i++){let x=rng()*w,y=water+rng()*(h-water),depth=(y-water)/(h-water);
+    c.fillStyle=i%3?'rgba(199,173,153,'+(.06+rng()*.18)+')':'rgba(19,46,51,.22)';c.fillRect(x,y,1+rng()*(4+depth*32),.45+rng()*.6)}
+  for(let i=0;i<130;i++){const left=rng()<.5;const edge=Math.pow(rng(),1.5)*w*.22;const x=left?edge:w-edge;const size=(1-edge/(w*.26))*(.1+rng()*.26)*h;
+    reeds(c,x,h+size*.23,size,(left?1:-1)*(rng()-.19)*size*.42,i%4?'#142c31':'#284147')}
+}
+function resize(){
+  w=canvas.clientWidth;h=canvas.clientHeight;scale=Math.min(2,devicePixelRatio||1);
+  for(const surface of [canvas,backdrop]){surface.width=Math.round(w*scale);surface.height=Math.round(h*scale)}
+  for(const c of [ctx,bg])c.setTransform(scale,0,0,scale,0,0);
+  landscape();draw();
+}
+function flash(f){f.phase=0;f.age=0}
+function step(dt){
+  t+=dt;for(const f of flies)f.age+=dt;
+  shoreAge+=dt;
+  rhythm.advance(t,(index,number)=>{
+    flash(flies[index]);
+    quietUntil=t+1.8;
+    const replies=['向こう岸の左手に、一つ。','もう一つ、同じ間合いで。','ひと呼吸おいて、三つ目の光。','その隣の一匹にも、光が渡りました。'];
+    statusLine.textContent=replies[number-1];
+    if(rhythm.complete)call.textContent='新しい光を送る';
+    updateControls();
+  });
+  if((rhythm.calls.length===3 && !rhythm.complete) || t<quietUntil)return;
+  for(const f of flies)f.phase+=dt/f.period;
+  // Adaptation of the proportional clock nudge in Nicky Case's Fireflies.
+  for(const f of flies){if(f.phase>=1){flash(f);const near=flies.find(g=>g!==f && Math.hypot(g.x-f.x,g.y-f.y)<.32);
+    if(near)near.phase=Math.min(1,near.phase*(1+.065))}}
+}
+function draw(){
+  ctx.drawImage(backdrop,0,0,w,h);
+  drawShoreLight();
+  for(let i=0;i<flies.length;i++){
+    const f=flies[i],u=t*.58+i*2.5,x=w*f.x+(reduced?0:Math.sin(u)*7),y=h*f.y+(reduced?0:Math.sin(u*.77)*6);
+    const beat=(1-Math.exp(-f.age/.09))*Math.exp(-f.age/.46)*1.7;
+    const light=Math.min(1,.12+beat),size=Math.min(w,h)*.009;
+    const radius=12+light*size*8;
+    const halo=ctx.createRadialGradient(x,y,0,x,y,radius);halo.addColorStop(0,'rgba(255,234,145,'+light*.87+')');halo.addColorStop(.18,'rgba(230,217,108,'+light*.43+')');halo.addColorStop(1,'rgba(242,215,100,0)');dot(ctx,x,y,radius,halo);
+    ctx.save();ctx.translate(x,y);ctx.rotate(i?.32:-.3);ctx.fillStyle='#403e3c';
+    ctx.beginPath();ctx.ellipse(0,-size*.4,size*.65,size*1.24,0,0,Math.PI*2);ctx.fill();
+    const spread=.5+(reduced?.25:.24*Math.sin(t*12));
+    for(const sign of [-1,1]){ctx.fillStyle='rgba(232,227,202,.58)';ctx.beginPath();ctx.ellipse(sign*size*.63,-size*.63,size*spread,size*1.27,sign*.57,0,Math.PI*2);ctx.fill()}
+    dot(ctx,0,size*.54,size*(.4+light*.53),'rgba(255,248,178,'+(.38+light*.62)+')');ctx.restore();
+    for(let j=0;j<15;j++){
+      const width=(2+Math.sin(j*2.7)*1.5)*(1+j*.13)*(1+light);
+      const dx=Math.sin(j*2.3+t*.57)*(.5+j*.33);
+      ctx.fillStyle='rgba(244,217,141,'+light*(1-j/16)*.45+')';ctx.fillRect(x+dx-width/2,h*.644+j*h*.006,width,1+(j/24));
+    }
+  }
+}
+function drawShoreLight(){
+  // A single small source on this bank, with a widening ripple on the water.
+  const x=w*.24, y=h*.84, age=shoreAge;
+  const glow=Math.exp(-age/.58), radius=8+glow*31;
+  const lamp=ctx.createRadialGradient(x,y,0,x,y,radius);
+  lamp.addColorStop(0,'rgba(255,239,164,'+(.12+.78*glow)+')');
+  lamp.addColorStop(.22,'rgba(236,207,121,'+(.05+.4*glow)+')');
+  lamp.addColorStop(1,'rgba(225,190,98,0)');dot(ctx,x,y,radius,lamp);
+  dot(ctx,x,y,1.7+1.9*glow,'rgba(253,233,164,'+(.35+.65*glow)+')');
+  if(age<1.8){
+    ctx.strokeStyle='rgba(230,207,140,'+(.38*(1-age/1.8))+')';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(x,y+5,5+age*20,1+age*3.4,0,0,Math.PI*2);ctx.stroke();
+  }
+}
+function updateControls(){
+  const n=rhythm.calls.length;
+  notes.forEach((note,i)=>note.classList.toggle('lit',i<n));
+  count.textContent=n+' / 3';
+  call.disabled=paused || (n===3&&!rhythm.complete);
+  reset.disabled=n===0;
+  if(!rhythm.complete)call.textContent=n===3?'返事を待つ':'光を送る';
+}
+function animate(now){
+  frame=0;if(paused||document.hidden)return;
+  if(!last||now-last>=31){step(last?Math.min(.08,(now-last)/1000):0);draw();last=now}
+  frame=requestAnimationFrame(animate)
+}
+function playback(){
+  cancelAnimationFrame(frame);frame=0;last=0;
+  pause.textContent=paused?'時を進める':'時を止める';
+  updateControls();
+  if(!paused&&!document.hidden)frame=requestAnimationFrame(animate)
+}
+pause.onclick=()=>{paused=!paused;playback()};
+function startAgain(){
+  rhythm.reset();shoreAge=10;quietUntil=0;
+  statusLine.textContent='「光を送る」を押すと、手前の岸辺に一つ灯ります。';
+  updateControls();draw();
+}
+reset.onclick=startAgain;
+call.onclick=()=>{
+  if(paused)return;
+  if(rhythm.complete)startAgain();
+  if(!rhythm.send(t))return;
+  shoreAge=0;
+  const count=rhythm.calls.length;
+  const messages=['一つ。次は好きなときに。','二つ。あと一度、光を送れます。','三つ。手を休めて、向こう岸をご覧ください。'];
+  statusLine.textContent=messages[count-1];
+  if(count===3)for(const f of flies)f.age=3;
+  updateControls();draw();
+};
+for(const button of [call,pause,reset]){
+  button.addEventListener('keydown',event=>{if(event.repeat)event.preventDefault()});
+}
+document.addEventListener('visibilitychange',playback);
+new ResizeObserver(resize).observe(canvas);
+if(paused)statusLine.textContent='静止した川辺です。「時を進める」から始められます。';
+resize();playback();
+</script></html>

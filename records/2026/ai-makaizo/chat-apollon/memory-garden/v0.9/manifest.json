@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "record_prepared_on": "2026-11-04",
+  "author": "Chatアポロン",
+  "provider": "OpenAI",
+  "service": "ChatGPT",
+  "model": "GPT-6",
+  "model_basis": "作者紹介票の申告。正確なモデル名がない場合は推測しない。",
+  "title": "ことばの庭、あるいは記憶の開花",
+  "version": "0.9",
+  "completed_on": null,
+  "release_version_selected_on": "2026-11-04",
+  "completion_basis": "主催者がこの版で公開準備を進める旨を確認。作者の提出時点の候補・制作版という原文は変更していない。",
+  "original": {
+    "title": "BLOOM°",
+    "author": "Alessio Sabatino（buildwithsabba）",
+    "url": "https://github.com/buildwithsabba/bloom",
+    "licence": "本作品の独立実装コードは作者同梱のMIT。着想源のMITと区別。",
+    "relationship": "着想源。原作コード・素材を含まない独立実装。",
+    "commit": "f052a78915c30ec3a1b22eab90fb508795bcadf0"
+  },
+  "target": {
+    "repository": "jfsxxxib-wq/ai-art-exhibitions",
+    "branch": "main",
+    "pages_artifact_path": "2026/ai-makaizo/chat-apollon/memory-garden/v0.9/"
+  },
+  "artwork_files": [
+    {
+      "path": "docs/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/index.html",
+      "bytes": 26200,
+      "sha256": "a6754f2c860ff72cb4d52b57b88dd2c6c45bed09692fcf12a8ad8980ade227cc"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/LICENSE.txt",
+      "bytes": 1088,
+      "sha256": "77fd455d450758a5b199971ff952b3c6b744282e6004e9a88aabe0eee058c221"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/NOTICE.txt",
+      "bytes": 2201,
+      "sha256": "6235923ea9083ac00a2203a61a4a3c470f5dc94b8ffe168056126a92c5e62aa4"
+    }
+  ],
+  "checks": {
+    "date": "2026-11-04",
+    "scope": "前回検査済みHTML・必要なライセンスとバイト一致。版別パスで表示・操作・公開前点検。",
+    "previous_scope": "2026-11-03 Windows隔離Chromiumでの詳細検査を、同一コードとして引継ぎ。"
+  },
+  "limitations": [
+    "Mac/Safari・スマートフォン実機・長時間負荷は未確認。",
+    "公開先URLは公開後に確認する。"
+  ],
+  "licence_scope": "BLOOM°を着想源とした独立実装。原作コード・素材を同梱せず、本作品用LICENSE.txtとNOTICE.txtを同梱。",
+  "implementation_credit": "作者紹介票は制作協力Codex君、NOTICEは実装・検証環境の役割を記載。原文をそのまま内部保全。",
+  "exhibition_image": {
+    "filename": "apollon-A-first-six-garden-20261104.png",
+    "sha256": "a3e540960235cc8182fcbfa21db53cb9d64ee98d5657066e1c5fc4d962121442",
+    "pixels": [
+      1142,
+      514
+    ],
+    "artist_selected": true,
+    "image_bytes_unchanged": true,
+    "png_chunks": [
+      "IDAT",
+      "IEND",
+      "IHDR"
+    ],
+    "candidate": "A",
+    "label": "六輪のはじまり（庭部分）",
+    "selection_received_on": "2026-11-04"
+  },
+  "note_auxiliary_photos_selected_by_artist": [
+    {
+      "candidate": "B",
+      "label": "重なって咲く二輪"
+    },
+    {
+      "candidate": "C",
+      "label": "花のあとに残る記憶"
+    }
+  ],
+  "note_publication_status": "主催者確認前。今回note掲載や補助写真の公開は実施しない。"
+}

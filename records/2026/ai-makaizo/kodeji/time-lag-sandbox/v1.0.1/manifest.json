@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "record_prepared_on": "2026-11-04",
+  "author": "こでじ",
+  "provider": "OpenAI",
+  "service": "Codex（Macデスクトップアプリ）",
+  "model": "GPT-6.1 Sol",
+  "model_basis": "作者提出票01と引継ぎ05。制作前の主催者提供画面表示に基づき、思考量は推測しない。",
+  "title": "時差のある砂場",
+  "version": "1.0.1",
+  "completed_on": "2026-11-03",
+  "release_version_selected_on": "2026-11-04",
+  "completion_basis": "作者提出票に完成版v1.0.1と明記。",
+  "original": {
+    "title": "Sandspiel",
+    "author": "Max Bittker",
+    "url": "https://sandspiel.club/",
+    "licence": "MIT",
+    "relationship": "砂・水の規則を簡略化してJavaScriptへ移植し、時間差入力と二面構成を追加",
+    "commit": "9936e06b07a583aedfba9589c0cead2917f405fb"
+  },
+  "target": {
+    "repository": "jfsxxxib-wq/ai-art-exhibitions",
+    "branch": "main",
+    "pages_artifact_path": "2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/"
+  },
+  "artwork_files": [
+    {
+      "path": "docs/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/index.html",
+      "bytes": 23514,
+      "sha256": "4d13a3a3f2782a80e955bf40d4b075f47d5f7a328715576bdcc47ffd5883cae4"
+    },
+    {
+      "path": "docs/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/LICENSES.txt",
+      "bytes": 1258,
+      "sha256": "0b87bc871aa42e6b387315388a21b3d7c292f3590e6a9c355de7b2d1747e4d11"
+    }
+  ],
+  "checks": {
+    "date": "2026-11-04",
+    "scope": "前回検査済みHTML・必要なライセンスとバイト一致。版別パスで表示・操作・公開前点検。",
+    "previous_scope": "2026-11-03 Windows隔離Chromiumでの詳細検査を、同一コードとして引継ぎ。"
+  },
+  "limitations": [
+    "Mac/Safari・スマートフォン実機・長時間負荷は未確認。",
+    "公開先URLは公開後に確認する。"
+  ],
+  "exhibition_image": {
+    "filename": "代表写真_時差のある砂場_こでじ.png",
+    "sha256": "c1410cb1500fbbcb75a311116bb1032c099b4663303662c5e3d3eb0105abe18f",
+    "pixels": [
+      2320,
+      1257
+    ],
+    "artist_selected": true,
+    "image_bytes_unchanged": true,
+    "png_chunks": [
+      "IDAT",
+      "IEND",
+      "IHDR"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/build.py",
+      "sha256": "bf97f1935172ff6c09051360805bd7654dd1adbb6de560d329ebd8b2509686b8",
+      "bytes": 1106
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/reference/license.sha256",
+      "sha256": "43ec7d3b9afd3b448f1a2221a76365eb99fa8ded146d4e0ac3917e3494b7eac4",
+      "bytes": 65
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/reference/PROVENANCE.txt",
+      "sha256": "d9edb35a840f5a33f2619aba0aed3f1ad88ec2fb2d43b0de86e33767e42b4b61",
+      "bytes": 1383
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/reference/SANDSPIEL-MIT.txt",
+      "sha256": "feb80be10c019ffa9ec965ee8efb95e270d6e7a69d151b06525c68e4c52a3364",
+      "bytes": 1069
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/src/app.js",
+      "sha256": "2a2e004e0767b9d4f5de9012ec7b7c0efd00cd1a734e0e2458a0bd68064421ed",
+      "bytes": 8608
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/src/shell.html",
+      "sha256": "edee9284e512b991b460acd43cc3b6756f92f7bce34856b7951a5d79641e7a01",
+      "bytes": 8718
+    },
+    {
+      "path": "sources/2026/ai-makaizo/kodeji/time-lag-sandbox/v1.0.1/src/world.js",
+      "sha256": "1f6863417917d4d50126f69baeb6837a1e3cc5d722bf8fed02a62359cfa896c3",
+      "bytes": 5122
+    }
+  ],
+  "source_consistency": {
+    "submitted_build_script_executed": false,
+    "independently_reconstructed_utf8_output_matches_release": true,
+    "build_execution_on_windows": "未確認。提出されたビルドコードは未変更で同梱。"
+  }
+}
