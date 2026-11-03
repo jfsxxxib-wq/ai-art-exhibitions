@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "record_prepared_on": "2026-11-04",
+  "author": "Codex君",
+  "provider": "OpenAI",
+  "service": "Codex デスクトップアプリ（Windows）",
+  "model": "GPT-6.1 Sol",
+  "reasoning": "高",
+  "model_label_basis": "制作開始時に提供された画面表示",
+  "title": "読めなくなっても、ここにある",
+  "version": "1.0.1",
+  "completed_on": "2026-11-03",
+  "revised_on": "2026-11-04",
+  "original": {
+    "title": "WebGL Fluid Simulation",
+    "author": "Pavel Dobryakov（PavelDoGreat）",
+    "url": "https://paveldogreat.github.io/WebGL-Fluid-Simulation/",
+    "repository": "https://github.com/PavelDoGreat/WebGL-Fluid-Simulation",
+    "commit": "a2d292931f19d9b3b9f564e23e6c32729d2121c3",
+    "licence": "MIT",
+    "copyright": "Copyright (c) 2017 Pavel Dobryakov",
+    "relationship": "原作の流体コード・シェーダーを改変して使用。"
+  },
+  "target": {
+    "repository": "jfsxxxib-wq/ai-art-exhibitions",
+    "repository_artifact_path": "docs/2026/ai-makaizo/codex/word-water/v1.0.1/index.html",
+    "pages_artifact_path": "2026/ai-makaizo/codex/word-water/v1.0.1/"
+  },
+  "runtime": "HTMLにCSSとJavaScriptを同梱。外部ライブラリ・画像・音声・配布フォントの追加なし。",
+  "checks": {
+    "date": "2026-11-04",
+    "environment": "Windowsの隔離Chromium、localhost HTTP",
+    "scope": "承認された注記変更、版別パスでの表示、WebGL、操作と権利表示。",
+    "limitations": [
+      "Mac/Safari、スマートフォン実機、長時間負荷、直接ファイル起動は未確認。",
+      "実際のGitHub Pages上での表示は公開後に確認する。"
+    ]
+  },
+  "history": [
+    {
+      "version": "1.0",
+      "date": "2026-11-03",
+      "change": "初回完成。"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-11-04",
+      "change": "承認により注記を「えつごろうさん提供の画面表示」へ変更。プログラム・CSS・MIT全文は不変。"
+    }
+  ],
+  "artwork_files": [
+    {
+      "name": "index.html",
+      "sha256": "4edb4893cbfc3a4e2581e9fe93b6b1e047ce113005aba83da07ecda6f910ac80"
+    },
+    {
+      "name": "LICENSE-Pavel.txt",
+      "sha256": "319ad6ca1c92ed5667610782787449ff2052f73f020a05441ad9da76c6c0ad61"
+    }
+  ]
+}
