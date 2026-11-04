@@ -80,5 +80,28 @@
       "label": "花のあとに残る記憶"
     }
   ],
-  "note_publication_status": "主催者確認前。今回note掲載や補助写真の公開は実施しない。"
+  "note_publication_status": "主催者確認前。今回note掲載や補助写真の公開は実施しない。",
+  "publication_addendum": {
+    "recorded_on": "2026-11-04",
+    "recorded_by": "Codex君（技術記録の追記。作者原文とは区別）",
+    "status": "公開済み・表記修正済み",
+    "public_url": "https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/",
+    "publication_commit": "8bfe7368b7126f14571061303a21afdad1f6dee0",
+    "label_correction_commit": "0280c98375c8666f98ee1bfdea9ac25c4131ce2a",
+    "label_correction": "主催者承認済み見本に従い、鑑賞用HTMLの公開前表記を3か所から削除。",
+    "version_note": "v0.9は公開中の版番号として維持。",
+    "original_text_preservation": "NOTICE.txtの作者提出時原文は全バイトを末尾にそのまま保持し、冒頭に現在の公開状況を追記。",
+    "historical_fields_note": "この追記より前の完成状態、検査範囲、制限、artwork_filesは公開準備時点の記録として保持。現在の鑑賞用HTMLはcurrent_artwork_file、今回の追記後の説明書はnotice_file_for_this_revisionを参照。",
+    "current_artwork_file": {
+      "path": "docs/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/index.html",
+      "bytes": 26108,
+      "sha256": "ef5c8c1a101fce33a8c0f36d7dbeb6734e5bf4b99a57d28cbe1a73d98a868165"
+    },
+    "notice_file_for_this_revision": {
+      "path": "docs/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/NOTICE.txt",
+      "bytes": 3421,
+      "sha256": "80ccaabc8f65fa73dcf56a5e658a599144705d283abda56633c490eac21e8d31"
+    },
+    "note_publication_note": "既存の「主催者確認前」は本記録作成時点のnote記事についての記載。作品の公開承認とは別。この追記ではnote記事の承認・公開の最新状態を確定しない。"
+  }
 }
