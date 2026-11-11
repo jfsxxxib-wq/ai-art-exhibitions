@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Codex（OpenAI）">
+<meta name="theme-color" content="#f4efdf">
+<title>ひとしずく楽団</title>
+<style>
+*{box-sizing:border-box} [hidden]{display:none!important}
+:root{color-scheme:light;--ink:#193b40;--paper:#f8f3e6;--line:#c6c9b8;--serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,serif;--sans:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
+body{margin:0;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:clamp(8px,3vh,32px) 10px;background-color:#e7e4d6;background-image:repeating-linear-gradient(110deg,transparent 0 13px,#acb9ab42 13px 14px,transparent 14px 24px);font-family:var(--sans);color:var(--ink)}
+main{width:min(100%,464px);border:1px solid #a1ae9f;border-radius:4px;background:var(--paper);padding:clamp(13px,4vw,25px);box-shadow:0 14px 38px #364b4220}
+header,.scores,.control,.scoreRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+header{border-bottom:1px solid var(--line);padding-bottom:9px}
+.brand{font:600 12px var(--serif);letter-spacing:.12em;display:flex;align-items:center;gap:7px}
+.mark{width:23px;height:23px;background:var(--ink);color:#ffe3a7;display:grid;place-items:center;border-radius:50%}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:3px solid #ab552b;outline-offset:3px}
+.small{background:transparent;border:1px solid #b1bcac;border-radius:20px;padding:5px 12px;min-height:36px;font-size:12px;font-weight:650}
+h1{font:700 clamp(30px,8.5vw,44px)/1.15 var(--serif);letter-spacing:.05em;margin:16px 0 8px}
+p{margin:0;font-size:14px;line-height:1.65} .description{margin-bottom:13px}
+.stage{overflow:hidden;background:#203f4b;border-radius:3px;border:1px solid #274750;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.stage svg{display:block;width:100%;height:auto;max-height:min(46svh,340px);background:#1b3d49}
+.mainButton{background:var(--ink);color:#fff7e1;border:1px solid #163333;border-radius:4px;font-size:16px;letter-spacing:.06em;font-weight:bold;padding:12px 16px;width:100%;min-height:46px}
+.mainButton:active{background:#325851}.foot{margin-top:13px}
+.scores{font-size:14px;font-weight:bold;margin:11px 0 8px}.scores b{font-size:21px;font-variant-numeric:tabular-nums}.unit{font-size:12px;margin-left:3px}.urgent{color:#9f432d}
+.scoreRow{justify-content:flex-start;margin:10px 0;font-size:12px}.sequence{display:flex;align-items:center;gap:6px}.chip{min-width:40px;text-align:center;border:1px solid #b6bfaf;border-radius:4px;padding:3px;font-weight:650;color:#53645d}.chip.now{background:#25474a;border-color:#25474a;color:#fff8de}.chip.done{background:#e3e5d4}
+#feedback{text-align:center;min-height:22px;font-size:13px;margin:5px 0;color:#345554}.control .small{min-width:80px;align-self:stretch;border-radius:4px}
+#resultText{margin:0 0 12px}#listen{margin:0 0 8px;width:100%}
+@media(max-height:670px){body{padding:5px 8px}main{padding:10px 13px}h1{margin:8px 0 5px}header{padding-bottom:4px}.description{margin-bottom:7px}.foot{margin-top:7px}.stage svg{max-height:40svh}}
+</style>
+</head>
+<body>
+<main>
+<header><span class="brand"><span class="mark" aria-hidden="true">♩</span>雨の町の演奏会</span><button id="sound" class="small" aria-pressed="true">音あり</button></header>
+<h1 id="title">ひとしずく楽団</h1>
+<div id="intro" class="description"><p>雲が光る風鈴の真上に来たら、絵をタップして雨粒をひとつ。三つの音を順に鳴らすと、町の窓に灯りがともります。</p></div>
+<div id="hud" hidden>
+<div class="scores"><span>残り <b id="seconds">75</b><span class="unit">秒</span></span><span>灯した窓 <b id="count">0</b><span class="unit">枚</span></span></div>
+<div class="scoreRow"><span>音の順番</span><div id="seq" class="sequence"></div></div>
+</div>
+<p id="resultText" hidden></p>
+<div class="stage" id="stage">
+<svg id="art" viewBox="0 0 420 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="雨の町に浮かぶ雲と、月・葉・花の三つの風鈴">
+<defs>
+ <linearGradient id="sky" x2=".17" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#173749"/><stop offset=".56" stop-color="#35616b"/><stop offset="1" stop-color="#a0afa1"/></linearGradient>
+ <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#ffe7b0" stop-opacity=".65"/><stop offset="1" stop-color="#ffe7b0" stop-opacity=".08"/></linearGradient>
+ <linearGradient id="glass" x2=".9" y2="1"><stop stop-color="#fff1c6" stop-opacity=".65"/><stop offset=".42" stop-color="#d5f4e5" stop-opacity=".28"/><stop offset="1" stop-color="#92d5ce" stop-opacity=".1"/></linearGradient>
+ <linearGradient id="cloudInk" x2="0" y2="1"><stop stop-color="#fff1d1"/><stop offset="1" stop-color="#b9d4cb"/></linearGradient>
+ <radialGradient id="shine"><stop stop-color="#ffe4a0" stop-opacity=".55"/><stop offset="1" stop-color="#ffe4a0" stop-opacity="0"/></radialGradient>
+ <pattern id="rain" width="47" height="44" patternUnits="userSpaceOnUse"><path d="M10 3l-3 8m35 17-2 5" stroke="#d8f4ea" opacity=".18" stroke-width=".8"/></pattern>
+ <pattern id="paper" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#fff3cd" opacity=".11"/></pattern>
+ <g id="moonIcon"><path d="M3-7A8 8 0 1 0 7 5 8 8 0 0 1 3-7Z" fill="currentColor"/></g>
+ <g id="leafIcon"><path d="M-7 6Q-10-6 8-7 10 8-7 6Z" fill="currentColor"/><path d="m-7 7 12-11" stroke="#2d5a52" stroke-width="1.2"/></g>
+ <g id="flowerIcon" fill="currentColor"><ellipse cy="-4" rx="3.3" ry="4.6"/><ellipse cy="-4" rx="3.3" ry="4.6" transform="rotate(72)"/><ellipse cy="-4" rx="3.3" ry="4.6" transform="rotate(144)"/><ellipse cy="-4" rx="3.3" ry="4.6" transform="rotate(216)"/><ellipse cy="-4" rx="3.3" ry="4.6" transform="rotate(288)"/><circle r="2" fill="#734d4e"/></g>
+</defs>
+<rect width="420" height="310" fill="url(#sky)"/>
+<circle cx="354" cy="52" r="40" fill="url(#shine)" opacity=".45"/><path d="M359 35a16 16 0 1 0 12 21 16 16 0 0 1-12-21" fill="#ecd99c" opacity=".85"/>
+<path d="M0 242Q38 211 66 216T128 211Q172 192 205 205T285 190Q323 186 353 196T420 183V310H0" fill="#476971"/>
+<path d="M0 254Q34 232 64 240T135 227Q166 218 202 233T277 216Q312 205 343 222T420 211V310H0" fill="#395c65"/>
+<g id="distant"></g><rect width="420" height="310" fill="url(#rain)"/>
+<g id="homes"></g>
+<path d="M0 305q61-8 108-2t94-1q60-7 103 0t115-3v11H0" fill="#142f39"/>
+<path d="M0 304q53-4 97 0m27 0q36-2 57-1m138 0 58-1" fill="none" stroke="#9db6a0" opacity=".46"/>
+<path d="M-3 100Q208 119 423 95" fill="none" stroke="#142e37" stroke-width="2"/><path d="M-3 99Q208 118 423 94" fill="none" stroke="#b1b7a2" stroke-width="1" opacity=".65"/>
+<g id="bells"></g>
+<g id="cloud"><path d="M-33 5q-5-13 9-16 2-15 17-12 7-13 22-7 8 3 10 12 14-1 17 12 11 4 7 13-3 6-13 6h-56q-14 0-13-8Z" fill="url(#cloudInk)" stroke="#e1e7cd" stroke-width="1.2"/><path d="M-24-11q8-8 16-3m24-8q6 2 8 8M-25 8q11 2 18 0" fill="none" stroke="#869fa0" stroke-linecap="round" opacity=".7"/><path d="M0 13q-2 5-5 9a5.4 5.4 0 1 0 10 0q-3-4-5-9Z" fill="#c7eeea" stroke="#eaf8de"/></g>
+<g id="effects" pointer-events="none"></g>
+<rect width="420" height="310" fill="url(#paper)" pointer-events="none"/>
+</svg></div>
+<div id="homeActions" class="foot"><button id="start" class="mainButton">演奏をはじめる（75秒）</button></div>
+<div id="playActions" hidden><p id="feedback" role="status"></p><div class="control"><button class="mainButton" id="drop">雨粒を落とす</button><button id="pause" class="small">ひと休み</button></div></div>
+<div id="endActions" class="foot" hidden><button id="listen" class="small">演奏を聴く</button><button id="again" class="mainButton">もう一度あそぶ</button></div>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+function shape(tag,attrs,parent){
+ const el=document.createElementNS(NS,tag);
+ for(const [name,value] of Object.entries(attrs)) el.setAttribute(name,value);
+ parent.appendChild(el); return el;
+}
+const notes=[
+ {x:77,name:'月',icon:'moonIcon',color:'#f3d18f',tag:'#d5a66a',hz:523.25},
+ {x:210,name:'葉',icon:'leafIcon',color:'#c3e7bf',tag:'#91b99d',hz:659.25},
+ {x:343,name:'花',icon:'flowerIcon',color:'#f6bbc1',tag:'#d49699',hz:783.99}
+];
+const windows=[],bells=[],halos=[],swings=[0,0,0];
+for(let n=0;n<22;n++){
+ const x=n*20-4, y=230+(n*29%24);
+ shape('path',{d:'M'+x+' '+y+'l9 -6 10 6v37h-19Z',fill:'#34515b'},$('distant'));
+ if(n%3===0) shape('rect',{x:x+6,y:y+7,width:3,height:5,fill:'#bcb897'},$('distant'));
+}
+for(let n=0;n<8;n++){
+ const x=n*57-10, y=259+(n*17%14);
+ const house=shape('g',{},$('homes'));
+ shape('path',{d:'M'+x+' '+y+'h51v40h-51Z',fill:n%2?'#284650':'#233e49'},house);
+ shape('path',{d:'M'+(x-4)+' '+y+'l15 -13h32l12 13Z',fill:'#193541',stroke:'#869a90','stroke-width':1.1},house);
+ for(let j=0;j<5;j++){
+  const wx=x+5+j%3*15, wy=y+5+Math.floor(j/3)*13;
+  const pane=shape('rect',{x:wx,y:wy,width:9,height:8,rx:.5,fill:'#577077'},house);
+  shape('path',{d:'M'+(wx+4.5)+' '+wy+'v8',stroke:'#273f48','stroke-width':1},house);
+  if(wx>=0 && wx+9<=420) windows.push(pane);
+ }
+}
+notes.forEach((note,i)=>{
+ const y=[106,109,104][i], g=shape('g',{transform:'translate('+note.x+' '+y+')'},$('bells'));
+ const halo=shape('g',{},g); halos.push(halo);
+ shape('circle',{cy:43,r:43,fill:'url(#shine)'},halo);
+ shape('path',{d:'M-36 45q1-20 14-29m58 29q-1-20-14-29',fill:'none',stroke:'#ffdf91','stroke-width':2,'stroke-linecap':'round'},halo);
+ const bell=shape('g',{},g); bells.push(bell);
+ shape('path',{d:'M0 0v18m0 37v27',fill:'none',stroke:'#e4dbb8','stroke-width':1.2},bell);
+ shape('path',{d:'M-24 54C-24 11 23 10 24 54Q0 64-24 54Z',fill:'url(#glass)',stroke:'#e1ebd6','stroke-width':1.5},bell);
+ shape('ellipse',{cy:54,rx:24,ry:5,fill:'#36616a',stroke:'#ccdfcd','stroke-width':1.3},bell);
+ shape('path',{d:'M-17 45q1-13 9-18',fill:'none',stroke:'#eff4df','stroke-width':2,'stroke-linecap':'round'},bell);
+ shape('use',{href:'#'+note.icon,transform:'translate(3 40) scale(.76)',color:note.color},bell);
+ shape('circle',{cy:57,r:3,fill:note.color},bell);
+ shape('path',{d:'M-7 71l16 1-3 37-15-3Z',fill:note.tag,stroke:note.color,'stroke-width':1},bell);
+ const label=shape('text',{x:0,y:94,'text-anchor':'middle',fill:'#233f46','font-family':'serif','font-size':13,'font-weight':'bold'},bell);
+ label.textContent=note.name;
+});
+let mode='intro', activeTime=0, prev=0, x=210, lastDrop=-10, falling=[], ripples=[];
+let phrase=[],step=0,lit=0,heard=[],order=[],messageUntil=0, phase=0;
+let sound=true,ctx=null,playback=[],replayTimer=0,replaying=false;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function audioReady(){
+ if(!sound) return;
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  if(!Audio)return;
+  if(!ctx)ctx=new Audio();
+  if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+ }catch{}
+}
+function ring(i,soft=false){
+ if(!sound || !ctx || ctx.state!=='running')return;
+ const now=ctx.currentTime;
+ [[1,.12,1.2],[2.72,.032,.45],[4.1,.018,.18]].forEach(([multiple,level,tail])=>{
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.frequency.value=notes[i].hz*multiple;
+  gain.gain.setValueAtTime(.0001,now);
+  gain.gain.exponentialRampToValueAtTime(level*(soft?.6:1),now+.009);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+tail);
+  osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+tail+.03);
+  osc.onended=()=>{osc.disconnect();gain.disconnect()};
+ });
+}
+function updateSound(){ $('sound').textContent=sound?'音あり':'音なし';$('sound').setAttribute('aria-pressed',String(sound));}
+function cancelReplay(){
+ playback.forEach(clearTimeout);playback=[];clearTimeout(replayTimer);replaying=false;
+ $('listen').textContent='演奏を聴く';
+}
+$('sound').onclick=()=>{
+ sound=!sound;updateSound();
+ if(sound)audioReady();else {cancelReplay();if(ctx)ctx.suspend().catch(()=>{});}
+};
+function nextPhrase(){
+ const previous=phrase[2];
+ phrase=[];
+ for(let k=0;k<3;k++){
+  const choices=[0,1,2].filter(i=>i!==(k?phrase[k-1]:previous));
+  phrase.push(choices[Math.floor(Math.random()*choices.length)]);
+ }
+ step=0;
+}
+function showTarget(){
+ $('seq').replaceChildren();
+ phrase.forEach((i,k)=>{
+  const chip=document.createElement('span');
+  chip.className='chip '+(k<step?'done':k===step?'now':'');
+  chip.textContent=(k<step?'✓ ':k===step?'▸ ':'')+notes[i].name;
+  $('seq').appendChild(chip);
+ });
+ halos.forEach((h,i)=>h.style.opacity=i===phrase[step]?'1':'0');
+}
+function placeCloud(v){x=v;$('cloud').setAttribute('transform','translate('+v+' 48)');}
+function cloudX(t){return 210+158*Math.sin(phase+t*1.08);}
+function start(){
+ cancelReplay();audioReady();mode='play';activeTime=0;prev=performance.now();phase=Math.random()*Math.PI*2;
+ lastDrop=-10;falling=[];ripples=[];swings.fill(0);lit=0;heard=[];phrase=[];order=windows.slice();
+ for(let j=order.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[order[j],order[k]]=[order[k],order[j]];}
+ windows.forEach(w=>w.setAttribute('fill','#577077'));
+ $('effects').replaceChildren();$('title').textContent='ひとしずく楽団';
+ for(const id of ['homeActions','intro','endActions','resultText'])$(id).hidden=true;
+ $('playActions').hidden=$('hud').hidden=false;
+ $('seconds').textContent=75;$('seconds').className='';$('count').textContent=0;
+ $('drop').disabled=false;$('drop').textContent='雨粒を落とす';$('pause').textContent='ひと休み';
+ nextPhrase();showTarget();placeCloud(cloudX(0));feedback('光る風鈴をねらって',2);
+}
+function feedback(s,duration){$('feedback').textContent=s;messageUntil=activeTime+duration;}
+function drop(){
+ if(mode!=='play'||activeTime>=75||activeTime-lastDrop<.28)return;
+ audioReady();lastDrop=activeTime;
+ const el=shape('path',{d:'M0-9Q-2-4-4-1a4.4 4.4 0 1 0 8 0Q2-4 0-9Z',fill:'#d4f8f1',stroke:'#f7f4ce','stroke-width':1.1,transform:'translate('+x+' 74)'},$('effects'));
+ falling.push({x,age:0,el});
+}
+function wave(cx,cy,color){
+ const el=shape('ellipse',{cx,cy,rx:1,ry:1,fill:'none',stroke:color,'stroke-width':2},$('effects'));
+ ripples.push({el,age:0});
+}
+function impact(i){
+ swings[i]=1;ring(i);heard.push({i,t:activeTime});
+ wave(notes[i].x,152,notes[i].color);
+ if(i!==phrase[step]){feedback(notes[i].name+'の音。次は「'+notes[phrase[step]].name+'」',1.5);return;}
+ step++;
+ if(step===3){
+  if(lit<order.length)order[lit].setAttribute('fill','#ffdf91');
+  lit++;$('count').textContent=lit;nextPhrase();feedback('三つの音が届いた！　窓に灯りがひとつ',2);
+ }else feedback(notes[i].name+'の音が届いた',1);
+ showTarget();
+}
+function finish(){
+ mode='end';$('hud').hidden=$('playActions').hidden=true;
+ $('endActions').hidden=$('resultText').hidden=false;
+ $('title').textContent='雨あがりの町';
+ $('resultText').textContent=lit?'あなたの三重奏で、町の窓が'+lit+'枚、明るくなりました。':(heard.length?'最初の一音が、雨の町に響きました。':'雨があがりました。また雲と演奏しましょう。');
+ $('listen').hidden=!heard.length;
+ halos.forEach(h=>h.style.opacity='0');
+}
+function togglePause(){
+ if(mode==='play'){
+  mode='paused';$('pause').textContent='再開する';$('drop').disabled=true;
+  $('feedback').textContent='ひと休み中';
+ }else if(mode==='paused'){
+  mode='play';prev=performance.now();$('pause').textContent='ひと休み';
+  $('drop').disabled=false;feedback('次は「'+notes[phrase[step]].name+'」',1.6);
+ }
+}
+function replay(){
+ if(replaying){cancelReplay();return;}
+ sound=true;updateSound();audioReady();replaying=true;$('listen').textContent='演奏を止める';
+ // Keep the original order and shorten the rests for the curtain call.
+ let when=90;
+ heard.forEach(({i,t},k)=>{
+  if(k)when+=Math.min(800,Math.max(200,(t-heard[k-1].t)*620));
+  playback.push(setTimeout(()=>{ring(i);swings[i]=1;wave(notes[i].x,152,notes[i].color);},when));
+ });
+ replayTimer=setTimeout(cancelReplay,when+1200);
+}
+function animate(now){
+ const dt=Math.max(0,(now-prev)/1000);prev=now;
+ if(mode==='play'){
+  activeTime+=dt;
+  const seconds=Math.max(0,Math.ceil(75-activeTime));
+  $('seconds').textContent=seconds;$('seconds').className=seconds<=10?'urgent':'';
+  placeCloud(cloudX(activeTime));
+  for(const d of falling){
+   d.age+=dt;const y=74+380*d.age*d.age+95*d.age;
+   const i=notes.findIndex(n=>Math.abs(n.x-d.x)<=28);
+   if(i>=0 && y>=131){impact(i);d.done=true;}
+   else if(y>=285){wave(d.x,285,'#b4d6cd');d.done=true;feedback('雨粒が屋根をたたいた',.9);}
+   if(d.done)d.el.remove();else d.el.setAttribute('transform','translate('+d.x+' '+y+')');
+  }
+  falling=falling.filter(d=>!d.done);
+  if(activeTime>messageUntil && $('feedback').textContent!=='次は「'+notes[phrase[step]].name+'」')$('feedback').textContent='次は「'+notes[phrase[step]].name+'」';
+  if(seconds===0 && !falling.length)finish();
+ }
+ if(mode!=='paused'){
+  for(let i=0;i<bells.length;i++){
+   swings[i]=Math.max(0,swings[i]-dt*1.15);
+   const angle=reduce?0:swings[i]*Math.sin((1-swings[i])*12)*12;
+   bells[i].setAttribute('transform','rotate('+angle+')');
+  }
+  for(const r of ripples){
+   r.age+=dt*1.7;r.el.setAttribute('rx',8+27*r.age);r.el.setAttribute('ry',3+8*r.age);
+   r.el.setAttribute('opacity',Math.max(0,1-r.age));if(r.age>=1)r.el.remove();
+  }
+  ripples=ripples.filter(r=>r.age<1);
+ }
+ requestAnimationFrame(animate);
+}
+$('start').onclick=$('again').onclick=start;$('drop').onclick=drop;
+$('stage').addEventListener('pointerdown',e=>{if(e.isPrimary && e.button===0)drop();});
+$('pause').onclick=togglePause;$('listen').onclick=replay;
+document.addEventListener('keydown',e=>{
+ if(mode==='play'&&e.code==='Space'&&!['pause','sound'].includes(document.activeElement.id)){e.preventDefault();if(!e.repeat)drop();}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(mode==='play')togglePause();cancelReplay();}});
+halos.forEach((h,i)=>h.style.opacity=i===0?'1':'0');placeCloud(notes[0].x);
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

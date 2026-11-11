@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102b39">
+<meta name="description" content="ひと押しから、星が咲く。タップでこだまをつなぐ、90秒の小さな夜空のゲーム。">
+<title>星のこだま屋</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23102b39'/%3E%3Cpath d='M32 10 38 25 54 27 42 38 46 54 32 45 18 54 22 38 10 27 26 25Z' fill='%23efd09b'/%3E%3C/svg%3E">
+<style>
+:root{color-scheme:dark;--sky:#102b39;--cream:#f7ecd1;--mint:#a6cec3;--gold:#f5d399}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;overscroll-behavior:none}body{background:#eae7df;color:var(--cream);font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:2px solid #fff2cf;outline-offset:4px}button:disabled{cursor:default}[hidden]{display:none!important}
+#app{position:relative;isolation:isolate;overflow:hidden;background:var(--sky);width:min(100%,440px);height:100svh;min-height:500px;margin:auto}#sky{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}.screen{height:100%;padding:27px 27px max(25px,env(safe-area-inset-bottom));display:flex;flex-direction:column}.brand{font-size:11px;letter-spacing:.12em;color:#bdcec5;line-height:1.8}.utilities{position:absolute;z-index:3;right:16px;top:max(16px,env(safe-area-inset-top));display:flex;gap:3px}.quiet{border:0;border-radius:12px;color:#d5e4d7;background:#ffffff05;min-height:44px;padding:8px 11px;font-size:11px}.quiet:hover{background:#ffffff10}.quiet:active{background:#ffffff18}.eyebrow{font-size:11px;letter-spacing:.17em;line-height:1.9;color:var(--mint)}#home .eyebrow{margin:clamp(24px,7vh,62px) 0 16px}h1{font-weight:500;font-size:clamp(37px,11vw,47px);line-height:1.45;letter-spacing:.12em;margin:0}.tagline{font-size:13px;line-height:2;letter-spacing:.06em;margin:16px 0}.intro{margin-top:auto;padding-top:12px}.how{font-size:13px;line-height:2.1;margin:0 0 20px}.how b{color:#ffcf9e;font-weight:500}.cta{display:block;flex-shrink:0;width:100%;padding:18px 12px;border:0;border-radius:18px;background:var(--gold);color:#223c43;font-size:15px;letter-spacing:.1em;font-weight:600;min-height:54px;box-shadow:0 5px 18px #00000010}.cta:hover{filter:brightness(1.06)}.cta:active{transform:translateY(1px)}.sub{color:#b3c9c3;font-size:10px;line-height:1.9;text-align:center;margin:12px 0 0}.credits{color:#8fa8a6;font-size:10px;text-align:center;margin:7px 0 0;letter-spacing:.05em}
+.hud{display:flex;align-items:center;justify-content:space-between;margin-top:30px}.label{font-size:11px;color:var(--mint)}.value{font-size:32px;line-height:1.3;letter-spacing:.03em;margin-top:4px;font-variant-numeric:tabular-nums}.value small{font-size:11px;margin-left:5px}.timer{text-align:right}.timebar{height:3px;background:#ffffff15;border-radius:4px;margin-top:16px;overflow:hidden}.timebar i{display:block;width:100%;height:100%;background:#f2ce99;transform-origin:left center}.chain{position:absolute;top:157px;left:12px;right:12px;pointer-events:none;text-align:center;font-size:12px;letter-spacing:.05em;line-height:1.6;min-height:40px;color:#d6e4d5}.chain b{font-size:30px;font-weight:400;color:#ffcf9e;margin-right:6px;vertical-align:-3px}.chain.pop{animation:breathe .35s ease-out}@keyframes breathe{from{transform:scale(.95);opacity:.6}to{transform:scale(1);opacity:1}}
+#field{position:absolute;top:205px;bottom:150px;left:10px;right:10px;border:0;border-radius:25px;background:transparent;touch-action:none;user-select:none;-webkit-user-select:none;color:transparent;padding:0}#field:focus-visible{outline:1px dashed #a6cec380;outline-offset:-5px}.bottom{margin-top:auto;text-align:center;pointer-events:none}.drops{display:flex;justify-content:center;gap:19px;margin-bottom:12px}.drop{position:relative;width:19px;height:19px;border-radius:50%;background:var(--mint);opacity:.2;transition:opacity .2s,transform .2s}.drop.full{opacity:1;transform:scale(1.04)}.drop.charging{background:conic-gradient(#a6cec3 var(--charge,0deg),#244650 0);opacity:.6}.bottom p{margin:0;font-size:11px;line-height:1.9;color:#b6d2cc}.hint{font-size:10px!important;color:#8faaa7!important;margin-top:5px!important}
+#result{text-align:center}#result .eyebrow{margin:36px 0 10px}h2{font-size:27px;font-weight:500;letter-spacing:.12em;line-height:1.7;margin:0}.score{font-size:58px;line-height:1.3;font-weight:400;margin:18px 0 0;font-variant-numeric:tabular-nums}.score small{font-size:12px;margin-left:6px}.stats{display:flex;justify-content:center;gap:33px;margin:18px 0 0}.stats div{font-size:11px;color:#adcbc4}.stats b{font-size:20px;display:block;color:#f5e9cd;font-weight:400;margin-top:6px}.endcopy{margin-top:auto;font-size:12px;line-height:2;color:#d1ded1;margin-bottom:23px;padding-top:75px}#result .cta{background:#b9d8cd}.best{font-size:10px;color:#a8c3b9;text-align:center;margin:8px 0 0}.result-actions{display:flex;justify-content:center;gap:20px;margin-top:5px}.result-actions .quiet{font-size:11px;min-height:38px;padding:7px 10px}
+#pause{position:absolute;inset:0;z-index:5;background:#0b222fe8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:35px;backdrop-filter:blur(5px)}#pause h2{font-size:25px}#pause p{font-size:13px;color:#c1d7cc;text-align:center;line-height:2;margin:22px 0 30px}#pause .cta{max-width:310px}#pause .quiet{margin-top:16px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(min-width:481px){body{padding:22px 0}#app{height:min(850px,calc(100svh - 44px));border-radius:30px;box-shadow:0 15px 40px #263d4930;border:1px solid #25414b}}
+@media(max-height:700px){.screen{padding:22px 23px max(17px,env(safe-area-inset-bottom))}#home .eyebrow{margin:24px 0 9px}h1{font-size:38px;line-height:1.35}.tagline{font-size:12px;margin:10px 0;line-height:1.8}.how{font-size:12px;line-height:1.95;margin-bottom:14px}.cta{padding:15px 10px;min-height:49px}.sub{margin-top:9px}.credits{margin-top:3px}.hud{margin-top:20px}.value{font-size:29px}.timebar{margin-top:10px}.chain{top:132px;font-size:11px}.chain b{font-size:26px}#field{top:174px;bottom:128px}.drops{margin-bottom:8px;gap:17px}.drop{width:17px;height:17px}.bottom p{font-size:10px}.hint{font-size:9px!important}#result .eyebrow{margin-top:21px}h2{font-size:23px}.score{font-size:48px;margin-top:9px}.stats{margin-top:11px}.stats b{font-size:18px}.endcopy{padding-top:65px;margin-bottom:13px;font-size:11px}.result-actions{margin-top:0}}
+@media(prefers-reduced-motion:reduce){.chain.pop{animation:none}.drop{transition:none}.cta:active{transform:none}}
+</style>
+</head>
+<body>
+<main id="app" data-state="home" aria-label="星のこだま屋">
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="utilities"><button id="sound" class="quiet" type="button" aria-pressed="false" aria-label="音をオンにする">音 オフ</button><button id="pauseButton" class="quiet" type="button" hidden>休憩</button></div>
+<section id="home" class="screen" aria-labelledby="title">
+<div class="brand">小さな、夜空のあそび</div>
+<p class="eyebrow">ひと押しの、あとが楽しい。</p>
+<h1 id="title">星の<br>こだま屋</h1>
+<p class="tagline">あなたの「ぽん」が、<br>思いがけない星まで届く。</p>
+<div class="intro"><p class="how">夜空をタップして、こだまの輪を。<br>輪にふれたつぼみは星に咲き、<br><b>次のこだま</b>を広げます。<br>星の集まるところをねらってみよう。</p>
+<button id="start" class="cta" type="button">夜空をひらく</button>
+<p class="sub">ひと晩 90秒 · タップだけで遊べます<br>音は、はじめはオフ</p><p class="credits">Codex（OpenAI）</p></div>
+</section>
+<section id="play" class="screen" aria-label="星空で遊ぶ" hidden>
+<div class="brand">星のこだま屋</div>
+<div class="hud"><div><div class="label">咲いた星</div><div class="value"><span id="score">0</span><small>こ</small></div></div><div class="timer"><div class="label" id="timeLabel">夜明けまで</div><div class="value" id="time">1:30</div></div></div>
+<div class="timebar" aria-hidden="true"><i id="timebar"></i></div>
+<div id="chain" class="chain">星の集まるところを、ぽん。</div>
+<button id="field" type="button" aria-label="夜空。好きなところをタップしてこだまを広げます。キーボードでは矢印で場所を選び、エンターかスペースで押せます。"></button>
+<div class="bottom"><div class="drops" aria-hidden="true"><i class="drop full"></i><i class="drop full"></i><i class="drop full"></i></div><p id="dropLabel">こだまのしずく · あと3つ</p><p>6秒ごとに、ひとつ戻ります</p><p class="hint" id="hint">小さな光が、これから咲くつぼみ。</p></div>
+</section>
+<section id="result" class="screen" aria-labelledby="resultTitle" hidden>
+<div class="brand">今夜の、こだま帖</div><p class="eyebrow" id="resultEyebrow">夜空を渡る、ちいさな拍手。</p><h2 id="resultTitle" tabindex="-1">遠くまで<br>届いた夜</h2>
+<p class="score"><span id="resultScore">0</span><small>この星</small></p>
+<div class="stats"><div>いちばんの連鎖<b id="resultChain">0こだま</b></div><div>そっと押した回数<b id="resultTaps">0回</b></div></div>
+<div class="endcopy" id="endcopy">ひとつ押した、その先に。<br>あなたの知らない、つながりがありました。</div>
+<button id="replay" class="cta" type="button">もうひと晩、あそぶ</button><p class="best" id="best"></p>
+<div class="result-actions"><button id="backHome" class="quiet" type="button">遊び方へ</button></div>
+</section>
+<div id="pause" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden><p class="eyebrow">少し、ひと休み。</p><h2 id="pauseTitle">星は、待っています。</h2><p>時計も、こだまも止めてあります。<br>準備ができたら、続きをどうぞ。</p><button id="resume" class="cta" type="button">この夜の続きを</button><button id="restart" class="quiet" type="button">新しい夜をはじめる</button></div>
+<div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+</main>
+<noscript>このゲームで遊ぶには、ブラウザのJavaScriptを有効にしてください。</noscript>
+<script>
+/* 星のこだま屋 / Codex（OpenAI）
+   単一HTML・外部素材なし。輪の広がりと星の開花はCanvas、音はWeb Audioで生成します。 */
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const app=$('app'), canvas=$('sky'), ctx=canvas.getContext('2d');
+const panels=[$('home'),$('play'),$('result')], drops=[...document.querySelectorAll('.drop')];
+const colors=['#efc18f','#a8cdbb','#e6aa95'];
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W=360,H=760,field={x:10,y:205,w:340,h:405},scale=1;
+let state='home',resumeState='playing',elapsed=0,settle=0,clock=0,ambient=0,last=0;
+let score=0,taps=0,water=3,recharge=0,maxChain=0,nextRoot=1;
+let seeds=[],rings=[],blooms=[],particles=[],waiting=[],threads=[],roots=new Map();
+let lastRoot=null,messageUntil=0,keyboardAim=false,aim={x:180,y:350},best=0,storageOK=true;
+let audio=null,master=null,sound=false,lastNote=-1;
+try{best=Math.max(0,Number(localStorage.getItem('hoshi-kodamaya-best-v1'))||0);}catch{storageOK=false;}
+const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function rect(){const a=app.getBoundingClientRect(),r=$('field').getBoundingClientRect();return{x:(r.left-a.left)*W/a.width,y:(r.top-a.top)*H/a.height,w:r.width*W/a.width,h:r.height*H/a.height};}
+function resize(){
+ const r=app.getBoundingClientRect(),old=field;W=r.width;H=r.height;
+ const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+ // Field geometry must remain measurable while its screen is hidden.
+ const compact=innerHeight<=700;field={x:10,y:compact?174:205,w:W-20,h:H-(compact?302:355)};
+ if(!$('play').hidden)field=rect();
+ scale=clamp(Math.sqrt(field.w*field.h/(340*405)),.75,1.15);
+ if(old.w&&old.h){for(const list of [seeds,blooms,rings,particles])for(const p of list){p.x=field.x+(p.x-old.x)/old.w*field.w;p.y=field.y+(p.y-old.y)/old.h*field.h;}for(const t of threads){t.x=field.x+(t.x-old.x)/old.w*field.w;t.y=field.y+(t.y-old.y)/old.h*field.h;t.u=field.x+(t.u-old.x)/old.w*field.w;t.v=field.y+(t.v-old.y)/old.h*field.h;}}
+ aim={x:field.x+field.w/2,y:field.y+field.h/2};
+}
+function setState(s){state=s;app.dataset.state=s;panels.forEach(p=>p.hidden=p.id!==(s==='home'?'home':s==='result'?'result':'play'));$('pause').hidden=s!=='paused';$('play').inert=s==='paused';$('pauseButton').hidden=!['playing','settling'].includes(s);$('sound').hidden=s==='paused';}
+function announce(t){$('announce').textContent=t;}
+function addSeed(){
+ let x,y;for(let k=0;k<14;k++){x=rand(field.x+18,field.x+field.w-18);y=rand(field.y+18,field.y+field.h-18);if(!seeds.some(s=>Math.hypot(s.x-x,s.y-y)<22*scale))break;}
+ const angle=rand(0,Math.PI*2),v=rand(3.5,9)*(reduced?.35:1);
+ seeds.push({x,y,vx:Math.cos(angle)*v,vy:Math.sin(angle)*v,r:rand(3,4.4)*scale,phase:rand(0,7),color:Math.floor(rand(0,3)),born:clock,grace:clock+.65});
+}
+function start(){
+ elapsed=settle=clock=0;score=taps=maxChain=0;water=3;recharge=0;nextRoot=1;lastRoot=null;messageUntil=0;lastNote=-1;
+ seeds=[];rings=[];blooms=[];particles=[];waiting=[];threads=[];roots=new Map();keyboardAim=false;
+ setState('playing');resize();for(let i=0;i<32;i++)addSeed();
+ $('chain').textContent='星の集まるところを、ぽん。';$('hint').textContent='小さな光が、これから咲くつぼみ。';$('timeLabel').textContent='夜明けまで';
+ updateHUD();$('field').focus({preventScroll:true});announce('90秒の夜がはじまりました。しずくは3つです。');last=performance.now();
+}
+function updateHUD(){
+ $('score').textContent=score;
+ const left=Math.max(0,Math.ceil(90-elapsed));$('time').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+ $('timebar').style.transform=`scaleX(${Math.max(0,1-elapsed/90)})`;
+ $('dropLabel').textContent=state==='settling'?'最後のこだまを、見届けています':`こだまのしずく · あと${water}つ`;
+ drops.forEach((d,i)=>{d.className='drop'+(i<water?' full':i===water&&water<3?' charging':'');d.style.setProperty('--charge',`${recharge/6*360}deg`);});
+ $('field').disabled=state!=='playing';
+}
+function tone(depth=0,quiet=false){
+ if(!sound||!audio||audio.state!=='running'||clock-lastNote<.055)return;lastNote=clock;
+ const notes=[261.63,293.66,329.63,392,440,523.25,587.33,659.25];const now=audio.currentTime;
+ const o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=notes[Math.min(depth,notes.length-1)];
+ g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(quiet?.14:.24,now+.012);g.gain.exponentialRampToValueAtTime(.001,now+.55);
+ o.connect(g);g.connect(master);o.start(now);o.stop(now+.58);o.onended=()=>{o.disconnect();g.disconnect();};
+}
+async function toggleSound(){
+ try{if(!audio){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('unavailable');audio=new AC();master=audio.createGain();master.gain.value=.15;master.connect(audio.destination);}if(audio.state==='suspended')await audio.resume();sound=!sound;master.gain.setTargetAtTime(sound?.15:0,audio.currentTime,.025);$('sound').textContent=sound?'音 オン':'音 オフ';$('sound').setAttribute('aria-pressed',String(sound));$('sound').setAttribute('aria-label',sound?'音をオフにする':'音をオンにする');if(sound){lastNote=-1;tone(2,true);}}
+ catch{$('sound').textContent='音なし';$('sound').disabled=true;announce('このブラウザでは音を使えません。音なしで遊べます。');}
+}
+function ring(x,y,root,depth=0){rings.push({x,y,root,depth,age:0,previous:0,r:0,max:(depth?49:72)*scale,life:depth?1.65:1.95,born:clock});}
+function press(x,y){
+ if(state!=='playing')return;
+ if(water===0){$('hint').textContent='しずくが戻るまで、少し待ってね。';announce('しずくをためています。6秒ごとにひとつ戻ります。');return;}
+ if(x<field.x||x>field.x+field.w||y<field.y||y>field.y+field.h)return;
+ if(water===3)recharge=0;water--;taps++;const root=nextRoot++;roots.set(root,{count:0});lastRoot=root;ring(x,y,root);tone(0,true);
+ $('hint').textContent='ぽん。そこから、広がっていく。';updateHUD();
+}
+function bloom(s,r){
+ score++;const root=roots.get(r.root);root.count++;maxChain=Math.max(maxChain,root.count);lastRoot=r.root;messageUntil=clock+3;
+ const b={x:s.x,y:s.y,age:0,size:rand(9,14)*scale,color:colors[s.color],angle:rand(0,6.28)};blooms.push(b);ring(s.x,s.y,r.root,r.depth+1);
+ threads.push({x:r.x,y:r.y,u:s.x,v:s.y,age:0});
+ for(let i=0;i<(reduced?2:6);i++){const a=rand(0,6.28),v=rand(7,27)*scale;particles.push({x:s.x,y:s.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,age:0,color:b.color});}
+ waiting.push(clock+rand(4.5,7.5));tone(r.depth+1);
+ $('chain').innerHTML=`<b>${root.count}</b> ${root.count===1?'こだま、咲きました':'こだま、つながった'}`;
+ if(root.count===5||root.count===10||root.count%20===0)announce(`${root.count}こだま、つながりました。`);
+ $('chain').classList.remove('pop');void $('chain').offsetWidth;$('chain').classList.add('pop');
+}
+function update(dt,real){
+ clock+=dt;
+ if(state==='playing'){
+  elapsed=Math.min(90,elapsed+real);
+  if(water<3){recharge+=real;while(recharge>=6&&water<3){recharge-=6;water++;if(water===3)recharge=0;$('hint').textContent='しずくが戻りました。次は、どこに？';}}
+  while(waiting.length&&waiting.some(t=>t<=clock)){const i=waiting.findIndex(t=>t<=clock);waiting.splice(i,1);addSeed();}
+  if(elapsed>=90){setState('settling');settle=0;$('timeLabel').textContent='夜明けです';$('chain').textContent='最後のこだまを、見届けよう。';announce('夜明けです。最後のこだまを見届けています。');}
+ }else{settle+=real;}
+ for(const s of seeds){s.x+=s.vx*dt;s.y+=s.vy*dt;const pad=13;if(s.x<field.x+pad){s.x=field.x+pad;s.vx=Math.abs(s.vx);}if(s.x>field.x+field.w-pad){s.x=field.x+field.w-pad;s.vx=-Math.abs(s.vx);}if(s.y<field.y+pad){s.y=field.y+pad;s.vy=Math.abs(s.vy);}if(s.y>field.y+field.h-pad){s.y=field.y+field.h-pad;s.vy=-Math.abs(s.vy);}}
+ // Only buds already alive when a wave was born can be caught by that wave.
+ // This keeps newly replenished buds from feeding an endless chain.
+ const active=rings.slice();for(const r of active){r.previous=r.r;r.age+=dt;r.r=r.max*Math.min(1,r.age/r.life);}
+ const caught=new Set();for(const r of active){for(const s of seeds){if(caught.has(s)||s.grace>clock||s.born>r.born)continue;const d=Math.hypot(s.x-r.x,s.y-r.y);if(d<=r.r+s.r+2&&d>=r.previous-s.r-2){caught.add(s);bloom(s,r);}}}
+ if(caught.size)seeds=seeds.filter(s=>!caught.has(s));
+ rings=rings.filter(r=>r.age<r.life);for(const b of blooms)b.age+=dt;blooms=blooms.filter(b=>b.age<3.2);
+ for(const p of particles){p.age+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;}particles=particles.filter(p=>p.age<1.4);
+ for(const t of threads)t.age+=dt;threads=threads.filter(t=>t.age<3);
+ if(state==='playing'&&clock>messageUntil&&rings.length===0)$('chain').textContent=taps?'次のこだまは、どこから？':'星の集まるところを、ぽん。';
+ updateHUD();if(state==='settling'&&((rings.length===0&&settle>.8)||settle>=4.5))finish();
+}
+function finish(){
+ setState('result');if(score>best){best=score;if(storageOK)try{localStorage.setItem('hoshi-kodamaya-best-v1',String(best));}catch{storageOK=false;}}
+ $('resultScore').textContent=score;$('resultChain').textContent=maxChain+'こだま';$('resultTaps').textContent=taps+'回';
+ $('resultTitle').innerHTML=maxChain>=12?'遠くまで<br>届いた夜':score>=1?'星が笑った<br>やさしい夜':'静かに<br>見つめた夜';
+ $('resultEyebrow').textContent=score?'夜空を渡る、ちいさな拍手。':'星空は、いつでもここに。';
+ $('endcopy').innerHTML=score?'ひとつ押した、その先に。<br>あなたの知らない、つながりがありました。':'次の夜は、つぼみのそばを、ぽん。<br>小さな輪から、星が咲きはじめます。';
+ $('best').textContent=storageOK?`この端末の最高記録 · ${best}この星`:'次の夜は、またちがう星空。';
+ $('resultTitle').focus({preventScroll:true});announce(`${score}この星が咲きました。いちばんの連鎖は${maxChain}こだまでした。`);
+}
+function pause(){if(!['playing','settling'].includes(state))return;resumeState=state;setState('paused');if(master&&audio)master.gain.setTargetAtTime(0,audio.currentTime,.03);$('resume').focus({preventScroll:true});announce('時計とこだまを止めました。');}
+function resume(){if(state!=='paused')return;setState(resumeState);last=performance.now();if(master&&audio){if(sound&&audio.state==='suspended')audio.resume().catch(()=>{});master.gain.setTargetAtTime(sound?.15:0,audio.currentTime,.03);}$(resumeState==='playing'?'field':'pauseButton').focus({preventScroll:true});}
+function flower(x,y,size,color,a=0,alpha=1){ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.globalAlpha=alpha;ctx.fillStyle=color;for(let i=0;i<5;i++){ctx.rotate(Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-size*.49,size*.31,size*.62,0,0,Math.PI*2);ctx.fill();}ctx.beginPath();ctx.arc(0,0,size*.22,0,7);ctx.fillStyle='#fff2cf';ctx.fill();ctx.restore();}
+function circle(x,y,r,stroke,alpha=1,line=1){ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,7);ctx.stroke();ctx.restore();}
+function drawBackdrop(){
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#102b39';ctx.fillRect(0,0,W,H);const g=ctx.createRadialGradient(W*.52,H*.52,5,W*.52,H*.52,W*.8);g.addColorStop(0,'#28504e');g.addColorStop(1,'#102b39');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ for(let i=0;i<76;i++){const x=(i*137.51)%W,y=(i*83.71+19)%H;ctx.globalAlpha=(i%3===0?.36:.16)*(reduced?1:.85+.15*Math.sin(ambient*.5+i));ctx.fillStyle='#e5dfb6';ctx.beginPath();ctx.arc(x,y,i%7===0?1.15:.65,0,7);ctx.fill();}ctx.globalAlpha=1;
+ ctx.fillStyle='#1a3b43';ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H-18);ctx.quadraticCurveTo(W*.25,H-75,W*.57,H-22);ctx.quadraticCurveTo(W*.8,H+8,W,H-24);ctx.lineTo(W,H);ctx.fill();
+}
+function draw(){
+ drawBackdrop();
+ if(state==='home'){
+  const x=W*.76,y=H*.48,sz=W/360;
+  ctx.fillStyle='#efd7a5';ctx.beginPath();ctx.arc(W*.81,H*.14,18*sz,0,7);ctx.fill();ctx.fillStyle='#112d3a';ctx.beginPath();ctx.arc(W*.835,H*.128,17.5*sz,0,7);ctx.fill();
+  [54,83,110].forEach((r,i)=>circle(x,y,r*sz,'#9bcfc3',.22-i*.06));flower(x,y,22*sz,'#eccb91',.2+(reduced?0:Math.sin(ambient*.3)*.05));flower(x+38*sz,y-64*sz,9*sz,'#dba892',-.2);flower(x-65*sz,y-43*sz,12*sz,'#93bfb6',.6);
+  ctx.fillStyle='#a5cec3';for(const [u,v]of [[x-74*sz,y+35*sz],[x+53*sz,y+74*sz]]){ctx.beginPath();ctx.arc(u,v,3.4*sz,0,7);ctx.fill();}return;
+ }
+ if(state==='result'){
+  const cy=H*.60,points=Array.from({length:6},(_,i)=>({x:W*(.12+i*.15),y:cy+[17,-14,29,-11,18,-27][i]}));
+  ctx.strokeStyle='#b5d3bf55';ctx.lineWidth=1;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  points.forEach((p,i)=>flower(p.x,p.y,[9,14,10,18,10,8][i]*W/360,colors[i%3],i*.3+(reduced?0:Math.sin(ambient*.3+i)*.03),score?1:.4));return;
+ }
+ ctx.save();ctx.beginPath();ctx.rect(field.x,field.y,field.w,field.h);ctx.clip();
+ for(const t of threads){ctx.strokeStyle='#c9e1c8';ctx.globalAlpha=Math.max(0,.27*(1-t.age/3));ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(t.x,t.y);ctx.lineTo(t.u,t.v);ctx.stroke();}ctx.globalAlpha=1;
+ for(const r of rings){const p=r.age/r.life,a=Math.sin(p*Math.PI)*.58;circle(r.x,r.y,r.r,r.depth?'#9bcebd':'#f3d29a',a,1.2);if(!reduced)circle(r.x,r.y,r.r*.8,'#a6d8c5',a*.3,.6);ctx.globalAlpha=a*.055;ctx.fillStyle='#a6d8c5';ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,7);ctx.fill();ctx.globalAlpha=1;}
+ for(const s of seeds){const alpha=clamp((clock-s.born)*2.5,0,1);ctx.globalAlpha=alpha*.08;ctx.fillStyle='#a5cec3';ctx.beginPath();ctx.arc(s.x,s.y,s.r+6,0,7);ctx.fill();ctx.globalAlpha=alpha*(.75+.18*Math.sin(clock*1.3+s.phase));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();ctx.strokeStyle='#bad1bb';ctx.lineWidth=.85;ctx.beginPath();ctx.moveTo(s.x,s.y-s.r-3);ctx.quadraticCurveTo(s.x+4,s.y-s.r-10,s.x+7,s.y-s.r-7);ctx.stroke();}ctx.globalAlpha=1;
+ for(const b of blooms){const grow=clamp(b.age/.23,0,1),fade=clamp((3.2-b.age)/1.5,0,1);flower(b.x,b.y,b.size*(.3+.7*(1-Math.pow(1-grow,3))),b.color,b.angle,fade);}
+ for(const p of particles){ctx.globalAlpha=Math.max(0,1-p.age/1.4)*.6;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,7);ctx.fill();}ctx.globalAlpha=1;
+ if(keyboardAim&&state==='playing'){circle(aim.x,aim.y,13,'#f8deb2',.8);ctx.strokeStyle='#f8deb2';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(aim.x-4,aim.y);ctx.lineTo(aim.x+4,aim.y);ctx.moveTo(aim.x,aim.y-4);ctx.lineTo(aim.x,aim.y+4);ctx.stroke();}
+ ctx.restore();
+}
+function frame(now){const real=last?Math.max(0,(now-last)/1000):0;last=now;const dt=Math.min(real,.05);if(state!=='paused')ambient+=dt;if(state==='playing'||state==='settling')update(dt,real);draw();requestAnimationFrame(frame);}
+$('start').addEventListener('click',start);$('replay').addEventListener('click',start);$('restart').addEventListener('click',()=>{if(master&&audio)master.gain.setTargetAtTime(sound?.15:0,audio.currentTime,.03);start();});
+$('backHome').addEventListener('click',()=>{setState('home');$('start').focus({preventScroll:true});});$('sound').addEventListener('click',toggleSound);$('pauseButton').addEventListener('click',pause);$('resume').addEventListener('click',resume);
+$('field').addEventListener('pointerdown',e=>{if(e.button!==0||!e.isPrimary)return;e.preventDefault();keyboardAim=false;const r=app.getBoundingClientRect();press((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height);});
+$('field').addEventListener('click',e=>{if(e.detail===0)press(aim.x,aim.y);});
+$('field').addEventListener('keydown',e=>{const v={ArrowLeft:[-18,0],ArrowRight:[18,0],ArrowUp:[0,-18],ArrowDown:[0,18]}[e.key];if(!v)return;e.preventDefault();keyboardAim=true;aim.x=clamp(aim.x+v[0],field.x+8,field.x+field.w-8);aim.y=clamp(aim.y+v[1],field.y+8,field.y+field.h-8);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(state==='paused')resume();else pause();}if(state==='paused'&&e.key==='Tab'){const first=$('resume'),end=$('restart');if(e.shiftKey&&document.activeElement===first){e.preventDefault();end.focus();}else if(!e.shiftKey&&document.activeElement===end){e.preventDefault();first.focus();}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);
+resize();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

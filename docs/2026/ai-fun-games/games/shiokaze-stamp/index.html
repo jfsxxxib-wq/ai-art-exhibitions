@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6efdf">
+<title>潮風スタンプ舎</title>
+<style>
+:root{--paper:#f6efdf;--ink:#173e44;--blue:#307e81;--red:#be503a;--line:#bfbba6;font-family:"Yu Gothic","Hiragino Sans",Meiryo,sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background-image:radial-gradient(#9e90752c .65px,transparent .8px);background-size:5px 5px}
+main{width:min(100% - 36px,530px);margin:auto;padding:clamp(14px,3vh,30px) 0 22px}
+header,.status,.cardfoot,.actions,.progress,.albumhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+header{border-top:4px double var(--ink);border-bottom:1px solid var(--ink);padding:7px 0;font-size:12px;letter-spacing:.12em;font-weight:700}
+.brand{display:inline-flex;align-items:center;gap:8px}.brand b{background:var(--ink);color:var(--paper);font-size:16px;line-height:24px;width:24px;text-align:center;border-radius:50%}
+button{font:inherit;cursor:pointer;color:inherit;touch-action:manipulation}button:focus-visible{outline:3px solid #db8b27;outline-offset:3px}.minor{border:1px solid var(--line);border-radius:30px;background:var(--paper);font-size:12px;padding:7px 12px}.minor[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+h1,h2,.piece,.count{font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif}
+h1{margin:16px 0 9px;font-size:clamp(34px,9.6vw,56px);letter-spacing:.04em;line-height:1.2}
+.intro{font-size:14px;line-height:1.75;margin:0 0 14px}
+.status{margin:12px 0;font-size:14px;font-weight:bold}.timer{font-variant-numeric:tabular-nums}.timer.low{color:var(--red)}
+.mount{position:relative;border:1px solid #b7b09b;background:#e2d9bd;background-image:repeating-linear-gradient(125deg,transparent 0 6px,#a69d7e22 6px 7px);padding:clamp(10px,3vw,17px);box-shadow:inset 0 0 0 3px #eee6d2}
+.sheet{position:relative;background:#fff7e2;padding:8px 9px 6px;box-shadow:1px 3px 5px #51442b35;transform:rotate(-.6deg)}
+.sheet:before,.sheet:after{content:"";position:absolute;top:2px;bottom:2px;width:4px;background:radial-gradient(circle at center,#dcd3b9 1.7px,transparent 2px) center/4px 9px repeat-y;pointer-events:none}.sheet:before{left:-2px}.sheet:after{right:-2px}
+canvas{display:block;width:100%;height:auto}#art{touch-action:manipulation}.cardfoot{border-top:1px solid #85958b;margin-top:4px;padding:5px 3px 1px}.piece{font-weight:bold;font-size:15px;letter-spacing:.13em}.serial{font:11px Georgia,serif;letter-spacing:.12em}
+.progress{margin:13px 0 5px;min-height:24px}.inks{display:flex;gap:6px;align-items:center;font-size:12px}.dot{width:11px;height:11px;border-radius:50%;background:var(--blue);display:inline-block}.dot.red{background:var(--red)}
+.hint{font-size:13px;line-height:1.65;margin:7px 0 12px;min-height:1.65em}.cta{display:block;width:100%;border:1px solid #11353a;border-radius:5px;color:#fff9e6;background:var(--ink);box-shadow:0 3px 0 #0b272d;font-weight:bold;font-size:17px;letter-spacing:.1em;padding:13px 8px;transition:background .15s}.cta:active{transform:translateY(2px);box-shadow:0 1px 0 #0b272d}.cta[data-phase="red"]{background:#9e4232}.cta[data-phase="blue"]{background:#23656a}
+footer{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:19px;padding-top:8px;color:#4c6463;font-size:11px;letter-spacing:.05em}
+[hidden]{display:none!important}.albumhead{border-block:1px solid var(--line);padding:10px 0;margin:12px 0}.count{font-weight:bold;font-size:23px}.album{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:15px 0}.mini{margin:0;padding:4px;background:#fff7e5;box-shadow:0 1px 4px #54462e33}.mini figcaption{font-size:11px;text-align:center;padding:4px 0}.mini canvas{aspect-ratio:1.6}h2{font-size:30px;margin:18px 0 4px}.results p{font-size:14px;line-height:1.6}
+@media(max-height:690px) and (max-width:600px){main{padding-top:8px}h1{margin-top:9px;font-size:34px}.intro{margin-bottom:8px}.progress{margin-top:8px}footer{margin-top:12px}}
+</style>
+</head>
+<body><main>
+<header><span class="brand"><b aria-hidden="true">〒</b> 海辺の絵はがき工房</span><button id="sound" class="minor" aria-pressed="false">音なし</button></header>
+<h1>潮風スタンプ舎</h1>
+<section id="work">
+<p id="intro" class="intro">動く色版の十字が、紙の四隅の十字と重なったらタップ。<br>青と朱の二度刷りで、海辺の絵はがきを作ろう。</p>
+<div id="status" class="status" hidden><span id="order"></span><span class="timer" id="timer"></span></div>
+<div class="mount"><div class="sheet"><canvas id="art" width="768" height="480" aria-label="海の絵はがきと四隅の見当合わせの十字"></canvas>
+<div class="cardfoot"><span id="piece" class="piece"></span><span id="serial" class="serial"></span></div></div></div>
+<div class="progress"><span class="inks"><i class="dot"></i>海の青　<i class="dot red"></i>夕日の朱</span><button id="pause" class="minor" hidden>ひと休み</button></div>
+<p id="hint" class="hint" role="status">ひと仕事は75秒。少しずれた刷りも、一枚ものです。</p>
+<button id="action" class="cta">工房をひらく</button>
+</section>
+<section id="results" class="results" hidden><h2>本日の刷り上がり</h2><div class="albumhead"><span class="count" id="total"></span><span id="best"></span></div><p id="endnote"></p><button id="again" class="cta">もう一度、工房をひらく</button><div id="album" class="album"></div></section>
+<footer><span>AI楽しいを創造するゲーム展</span><span>Work ／ OpenAI</span></footer>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const W=640,H=400,C={paper:'#fff5db',ink:'#19454b',blue:'#348688',red:'#c85c43'};
+const titles=['岬の灯台','帆に南風','くじらの昼寝','港の屋根','波を跳ぶ魚'];
+const glyph=(g,points,fill)=>{g.beginPath();points.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fillStyle=fill;g.fill()};
+function line(g,x,y,xx,yy,c,w=2){g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(x,y);g.lineTo(xx,yy);g.stroke()}
+function oval(g,x,y,rx,ry,c){g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill()}
+function rect(g,x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
+// Reusable ink plates are drawn once at print resolution, including their carved details.
+function plate(n,layer){
+ const c=document.createElement('canvas');c.width=960;c.height=600;const g=c.getContext('2d');g.scale(1.5,1.5);
+ const {blue,red,ink,paper}=C;
+ function wave(x,y,len,color){g.strokeStyle=color;g.lineWidth=2;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+len*.33,y-7,x+len*.68,y);g.quadraticCurveTo(x+len*.85,y+2,x+len,y-1);g.stroke()}
+ function bird(x,y,s){g.strokeStyle=ink;g.lineWidth=2.6;g.beginPath();g.moveTo(x-s,y-3);g.quadraticCurveTo(x-2,y-5,x,y+2);g.quadraticCurveTo(x+5,y-6,x+s,y-6);g.stroke()}
+ if(layer===0){
+  const y=253;g.fillStyle=blue;g.beginPath();g.moveTo(0,y);for(let x=0;x<=660;x+=20)g.lineTo(x,y+4*Math.sin(x*.023+n));g.lineTo(660,410);g.lineTo(0,410);g.fill();
+  for(let j=0;j<9;j++)for(let i=0;i<14;i++){const x=i*54+(j%2)*21-24+8*Math.sin(i*3+j*7);wave(x,262+j*15+6*Math.sin(i*2+j),17+(i*7+j*3)%29,paper)}
+  if(n===0){glyph(g,[[0,238],[60,227],[97,235],[137,218],[202,230],[258,252],[0,257]],blue)}
+  if(n===1){glyph(g,[[305,85],[315,223],[204,223]],blue);for(let i=0;i<5;i++)line(g,297-i*13,121+i*17,307,210+i*2,paper,2)}
+  if(n===2){g.fillStyle=blue;g.beginPath();g.moveTo(142,257);g.bezierCurveTo(117,163,250,134,367,194);g.bezierCurveTo(407,217,437,227,465,209);g.quadraticCurveTo(456,168,435,161);g.quadraticCurveTo(473,159,489,192);g.quadraticCurveTo(507,161,547,164);g.quadraticCurveTo(524,186,510,209);g.bezierCurveTo(490,269,390,291,313,282);g.closePath();g.fill();for(let i=0;i<6;i++)wave(191+i*18,194+4*Math.sin(i),12,paper)}
+  if(n===3){glyph(g,[[25,252],[89,214],[149,231],[221,201],[288,239],[335,249]],blue)}
+  if(n===4){g.save();g.translate(318,170);g.rotate(-.28);glyph(g,[[-85,5],[-136,-30],[-122,1],[-139,30]],blue);oval(g,0,0,97,32,blue);glyph(g,[[-19,-12],[-73,-83],[35,-22]],blue);for(let i=0;i<4;i++)line(g,-52+i*11,-56+i*5,-18+i*10,-21,paper,2);g.restore()}
+ }
+ if(layer===1){
+  const sx=[187,461,450,165,458][n],sy=[103,108,91,96,106][n];oval(g,sx,sy,40,40,red);
+  g.save();g.beginPath();g.arc(sx,sy,40,0,Math.PI*2);g.clip();for(let j=0;j<6;j++)line(g,sx-40,sy+17+j*5,sx+40,sy+14+j*5,paper,1.6);g.restore();
+  if(n===0){glyph(g,[[368,147],[402,147],[405,168],[366,168]],red);glyph(g,[[362,188],[407,188],[410,208],[359,208]],red);glyph(g,[[360,118],[384,101],[408,118]],red)}
+  if(n===1){glyph(g,[[321,102],[405,207],[322,216]],red);glyph(g,[[322,75],[357,84],[321,93]],red)}
+  if(n===2){for(let i=0;i<7;i++){const a=(i-3)*.22;const x=208+Math.sin(a)*38,y=149-Math.cos(a)*37;line(g,208+Math.sin(a)*12,160,x,y,red,3);oval(g,x+Math.sin(a)*4,y-8,2.5,5,red)}}
+  if(n===3){for(let i=0;i<4;i++){const x=233+i*62,y=217-i%2*22;glyph(g,[[x-5,y],[x+25,y-28],[x+56,y]],red)}}
+  if(n===4){g.save();g.translate(318,170);g.rotate(-.28);glyph(g,[[15,3],[-24,62],[54,13]],red);g.restore()}
+  for(let i=0;i<4;i++)wave(sx-31+i*7,265+i*8,65-i*10,red)
+ }
+ if(layer===2){
+  if(n===0){glyph(g,[[211,272],[282,251],[317,228],[356,230],[386,219],[425,229],[464,245],[511,263],[568,278]],ink);
+   g.strokeStyle=ink;g.lineWidth=3;g.beginPath();g.moveTo(355,232);g.lineTo(370,144);g.lineTo(400,144);g.lineTo(413,231);g.stroke();
+   rect(g,360,140,50,5,ink);rect(g,366,119,37,3,ink);for(let i=0;i<4;i++)rect(g,368+i*10,120,2.6,20,ink);rect(g,381,95,2,10,ink);rect(g,379,174,6,9,ink);rect(g,378,218,10,13,ink);
+   for(let i=0;i<17;i++)line(g,291+i*10,254+4*Math.cos(i*.7),300+i*10,249+4*Math.cos(i*.7),paper,1.5)
+  }
+  if(n===1){rect(g,317,73,4,159,ink);line(g,318,89,197,232,ink,1.7);line(g,321,89,413,230,ink,1.7);glyph(g,[[180,230],[425,226],[395,251],[217,257]],ink);line(g,200,237,412,232,paper,2)}
+  if(n===2){oval(g,173,217,4,4,ink);g.strokeStyle=ink;g.lineWidth=2;g.beginPath();g.moveTo(144,236);g.quadraticCurveTo(166,252,199,234);g.stroke();for(let i=0;i<4;i++)line(g,241+i*10,248,252+i*10,258,ink,1.6)}
+  if(n===3){glyph(g,[[157,250],[253,239],[362,246],[461,239],[558,256],[548,265],[178,268]],ink);for(let i=0;i<4;i++){const x=233+i*62,y=217-i%2*22;line(g,x,y+1,x,y+35,ink,3);line(g,x+50,y+1,x+50,y+35,ink,3);rect(g,x+21,y+12,10,22,ink);rect(g,x+6,y+8,7,8,ink)}}
+  if(n===4){g.save();g.translate(318,170);g.rotate(-.28);oval(g,65,-6,4,4,ink);for(let i=0;i<3;i++)line(g,38-i*8,-12,32-i*8,2,ink,1.6);g.restore();for(let i=0;i<5;i++)line(g,170+i*11,244-i*3,161+i*12,230-i*5,ink,2)}
+  const bx=n===0?260:118;bird(bx,97,12);bird(bx+33,85,8);bird(bx-26,108,7);
+ }
+ return c
+}
+const plates=titles.map((_,n)=>[0,1,2].map(i=>plate(n,i)));
+const grain=document.createElement('canvas');grain.width=W;grain.height=H;
+{const g=grain.getContext('2d');let seed=833;function rand(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}for(let i=0;i<9700;i++){g.fillStyle=i%3?'rgba(255,249,226,.34)':'rgba(62,53,38,.12)';g.fillRect(rand()*W,rand()*H,rand()*1.9+.3,rand()*1.4+.4)}}
+function cross(g,x,y,color,width){line(g,x-9,y,x+9,y,color,width);line(g,x,y-9,x,y+9,color,width)}
+function render(canvas,n,offsets,active=-1){
+ const g=canvas.getContext('2d');g.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);rect(g,0,0,W,H,C.paper);
+ g.save();g.beginPath();g.rect(28,27,584,346);g.clip();
+ if(active>=0){g.globalAlpha=.16;g.drawImage(plates[n][active],0,0,W,H);g.globalAlpha=1}
+ for(const i of [0,1,2]){if(i===1&&active===0)continue;const [dx,dy]=offsets[i]||[0,0];g.drawImage(plates[n][i],dx,dy,W,H)}
+ g.drawImage(grain,0,0);g.restore();
+ for(const x of [29,611])for(const y of [27,373]){cross(g,x,y,C.ink,2);if(active>=0){const [dx,dy]=offsets[active];cross(g,x+dx,y+dy,active?C.red:C.blue,3)}}
+}
+let mode='home',n=0,phase=0,offsets=[[0,0],[0,0]],elapsed=0,stageStart=0,deadline=0,prints=[],raf=0,lastNow=0,sounding=false,audioCtx,deck=[],phaseShift=0;
+const duration=75000;
+function soundTone(freq){if(!sounding||!audioCtx)return;try{const t=audioCtx.currentTime,o=audioCtx.createOscillator(),a=audioCtx.createGain();o.type='sine';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(freq*.68,t+.13);a.gain.setValueAtTime(.14,t);a.gain.exponentialRampToValueAtTime(.001,t+.17);o.connect(a);a.connect(audioCtx.destination);o.start(t);o.stop(t+.18)}catch{}}
+$('sound').onclick=()=>{if(!sounding){try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume().catch(()=>{})}catch{return}}sounding=!sounding;$('sound').setAttribute('aria-pressed',String(sounding));$('sound').textContent=sounding?'音あり':'音なし';soundTone(450)};
+function caption(){ $('piece').textContent=titles[n];$('serial').textContent='No. '+String(n+1).padStart(2,'0') }
+function drift(){const t=(elapsed-stageStart)/1000, a=phaseShift+t*(1.8+(n%3)*.17);return phase?[0,22*Math.sin(a)]:[24*Math.sin(a),0]}
+function showTime(){const s=Math.max(0,Math.ceil((duration-elapsed)/1000));$('timer').textContent='残り '+s+' 秒';$('timer').classList.toggle('low',s<=10)}
+function update(now){elapsed+=Math.max(0,now-lastNow);lastNow=now;showTime();if(elapsed>=duration){finish();return false}return true}
+function frame(now){if(mode!=='play'&&mode!=='dry')return;if(!update(now))return;
+ if(mode==='dry'&&elapsed>=deadline)nextCard();
+ if(mode==='play'){offsets[phase]=drift();render($('art'),n,offsets,phase)}
+ raf=requestAnimationFrame(frame)}
+function stage(){stageStart=elapsed;phaseShift=(.65+Math.random()*.8)*(Math.random()<.5?-1:1);
+ $('action').dataset.phase=phase?'red':'blue';$('action').textContent=phase?'朱版を刷る':'青版を刷る';
+ $('order').textContent=(prints.length+1)+' 枚目　／　'+(phase?'朱版':'青版');
+ offsets[phase]=drift();render($('art'),n,offsets,phase)}
+function nextCard(){if(!deck.length){deck=[0,1,2,3,4];for(let i=4;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}if(prints.length&&deck[4]===n)[deck[0],deck[4]]=[deck[4],deck[0]]}
+ n=deck.pop();mode='play';offsets=[[0,0],[0,0]];phase=0;caption();$('hint').textContent='横に動く青い十字を、紙の十字に合わせて。';stage()}
+function start(){cancelAnimationFrame(raf);$('work').hidden=false;$('results').hidden=true;$('intro').hidden=true;$('status').hidden=false;$('pause').hidden=false;$('pause').textContent='ひと休み';
+ prints=[];deck=[];elapsed=0;lastNow=performance.now();nextCard();showTime();raf=requestAnimationFrame(frame);$('action').focus({preventScroll:true})}
+function stamp(){if(mode!=='play')return;const now=performance.now();if(!update(now))return;
+ // Stamp the position the player actually saw on the last painted frame.
+ soundTone(phase?630:360);
+ if(phase===0){phase=1;$('hint').textContent='青が刷れました。今度は縦に動く朱の十字を合わせて。';stage();return}
+ const d=Math.hypot(offsets[0][0],offsets[1][1]);const label=d<=5?'ぴたり賞':d<=13?'上々の刷り':'味わいの刷り';
+ prints.push({n,offsets:offsets.map(o=>[...o]),label});mode='dry';deadline=elapsed+1500;render($('art'),n,offsets);
+ $('action').textContent='刷り上がり！';delete $('action').dataset.phase;$('order').textContent=prints.length+' 枚目　／　完成';$('hint').textContent='「'+titles[n]+'」に、'+label+'。'}
+let previousMode='play';
+function pause(){if(mode!=='play'&&mode!=='dry')return;if(!update(performance.now()))return;previousMode=mode;mode='pause';cancelAnimationFrame(raf);$('pause').hidden=true;$('action').textContent='仕事を再開する';$('hint').textContent='ひと休み中。残り時間も止まっています。'}
+function resume(){mode=previousMode;$('pause').hidden=false;lastNow=performance.now();$('action').textContent=mode==='dry'?'刷り上がり！':phase?'朱版を刷る':'青版を刷る';$('hint').textContent=mode==='dry'?'次の紙を用意しています。':'色版の十字を、紙の十字に合わせて。';raf=requestAnimationFrame(frame)}
+function finish(){cancelAnimationFrame(raf);mode='end';$('work').hidden=true;$('results').hidden=false;$('total').textContent=prints.length+' 枚完成';$('best').textContent='ぴたり賞　'+prints.filter(p=>p.label==='ぴたり賞').length+' 枚';
+ $('endnote').textContent=prints.length?'今日刷った絵はがきです。海の色も版のずれも、そのまま残しました。':'港の仕事時間が終わりました。次は青、朱の順に一枚刷ってみましょう。';
+ $('album').replaceChildren();for(const p of prints){const fig=document.createElement('figure'),can=document.createElement('canvas'),cap=document.createElement('figcaption');fig.className='mini';can.width=320;can.height=200;render(can,p.n,p.offsets);cap.textContent=titles[p.n]+'・'+p.label;fig.append(can,cap);$('album').append(fig)}$('again').focus({preventScroll:true})}
+$('action').onclick=()=>{if(mode==='home')start();else if(mode==='pause')resume();else stamp()};
+$('art').onclick=stamp;$('pause').onclick=pause;$('again').onclick=start;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&mode==='play'&&(!document.activeElement.matches('button')||document.activeElement===$('action'))){e.preventDefault();stamp()}});
+caption();render($('art'),n,offsets);
+</script></body></html>
