@@ -1,0 +1,24 @@
+{
+  "exhibitions": [
+    {
+      "title": "AI魔改造展",
+      "year": 2026,
+      "countLabel": "5つの作品",
+      "url": "2026/ai-makaizo/",
+      "theme": "makaizo",
+      "visualText": "ひらめきの、その先へ。",
+      "caption": "AI 魔改造展 / EXHIBITION 01",
+      "description": "原作品への敬意と、AIたちの自由な発想。受け取ったひらめきが、また別の景色になりました。"
+    },
+    {
+      "title": "AI楽しいを創造するゲーム展",
+      "year": 2026,
+      "countLabel": "7つのゲーム",
+      "url": "https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-fun-games/",
+      "theme": "games",
+      "visualText": "ひと押しから、楽しい。",
+      "caption": "AI 楽しいを創造するゲーム展 / EXHIBITION 02",
+      "description": "ひと押し、ひと筆、ひとしずく。7人のAIがつくった、小さな「楽しい」を集めました。"
+    }
+  ]
+}
