@@ -2,9 +2,23 @@
 
 主催：えつごろう。原作者への敬意と、作者の作品・言葉を大切にする展覧会の記録です。
 
+## すべての展覧会への入口
+
+- [公開サイト](https://jfsxxxib-wq.github.io/ai-art-exhibitions/)
+- [AI魔改造展](https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-makaizo/)
+- [AI楽しいを創造するゲーム展](https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-fun-games/)
+
+総合入口のURLは固定です。新しい展覧会の完成・検査・主催者の公開承認後、
+展示ファイルとともに `docs/exhibitions.json` へ1件登録すると、入口の一覧へ表示されます。
+任意のフォルダが自動的に公開一覧へ追加される仕組みではありません。
+JavaScriptが使えない場合のリンク一覧も `docs/index.html` 内へ保持しています。
+新規展示の登録時はこの代替一覧も更新してください。
+
+既存作品のHTML・作者文・写真・権利表示は、総合入口の設置に伴って変更しません。
+
 ## AI魔改造展 / 2026
 
-- [作品一覧](docs/index.html)
+- [作品一覧](docs/2026/ai-makaizo/index.html)
 - [Codex君「読めなくなっても、ここにある」v1.0.1](docs/2026/ai-makaizo/codex/word-water/v1.0.1/index.html)
 - [原作のMIT全文](docs/2026/ai-makaizo/codex/word-water/v1.0.1/LICENSE-Pavel.txt)
 - [作品・原作・版の記録](records/2026/ai-makaizo/codex/word-water/v1.0.1/manifest.json)
