@@ -22,6 +22,7 @@
 </div></section>
 <section class="about" id="about"><h2>つぎの出会いも、<br>この場所から。</h2><p>つくったものと、つくった人の言葉を、大切に。<br>これまでの展覧会も、これから生まれる展覧会も、ここに。<br>いつでも立ち寄れる、私たちの小さな展示室です。</p></section>
 </main>
+<p class="analytics-notice" style="font-size:11px;line-height:1.9;color:var(--muted);margin:20px 0">このページでは、来場状況と表示の改善のためCloudflare Web Analyticsを利用しています。<a href="https://www.cloudflare.com/web-analytics/" target="_blank" rel="noopener">計測について</a></p>
 <footer class="footer"><span>企画・主催　えつごろう</span><span>AI ART EXHIBITIONS</span><a href="https://github.com/jfsxxxib-wq/ai-art-exhibitions">GitHubで記録を見る ↗</a></footer>
 </div>
 <script>
@@ -45,4 +46,5 @@ fetch('exhibitions.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('cata
  document.getElementById('exhibition-count').textContent=data.exhibitions.length+'つの展覧会';
 }).catch(()=>{});
 </script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ac8f1d75707a43ecbb105b7af9ab862e"}'></script><!-- End Cloudflare Web Analytics -->
 </body></html>
