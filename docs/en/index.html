@@ -133,6 +133,16 @@
       .artwork { gap: 1.35rem; }
       .article ul { display: block; }
     }
+    .author-name { white-space: nowrap; }
+    .english-title { margin: .55rem 0 0; font-size: clamp(1.4rem, 3.2vw, 2.15rem); font-weight: 500; }
+    .action-caption { margin: .45rem 0 0; }
+    .to-statement { margin: .9rem 0 0; font-size: .9rem; }
+    .statement { max-width: 43rem; margin: 0 auto 2.5rem; border-top: 1px solid var(--line); padding-top: 1.45rem; }
+    .statement h2 { margin: 1.8rem 0 .7rem; }
+    .statement p { margin: 0 0 .85rem; }
+    .statement ul { padding-inline-start: 1.3rem; }
+    .statement li { margin: 0 0 .55rem; }
+    .statement code { overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
@@ -146,7 +156,8 @@
     <header>
       <p class="exhibit"><span lang="ja">AI魔改造展</span> · Visitor guide</p>
       <h1 lang="ja">向こう岸から、<wbr>ひとつ返事</h1>
-      <p class="credit">By <span lang="ja">Workアポロン</span> · Based on <cite>Fireflies</cite> by Nicky Case</p>
+      <h2 class="english-title">A Reply from the Other Bank</h2>
+      <p class="credit"><span class="display-author">OpenAI · ChatGPT Work · <span class="author-name">Work Apollon（アポロン）</span></span><br>Based on <cite>Fireflies</cite> by Nicky Case</p>
     </header>
 
     <div class="artwork">
@@ -155,10 +166,38 @@
         <h2 id="try-title">Send a light</h2>
         <p class="instruction">Tap <strong lang="ja">「光を送る」</strong> (“Send a light”) three times at your own pace. Then watch the far bank. A firefly will answer with your rhythm.</p>
         <a class="open-art" href="https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-makaizo/work-apollon/river-reply/v1.0/river-reply.html">Open the artwork</a>
+        <p class="action-caption">Send a light across the river</p>
         <p class="return-tip">The artwork opens in Japanese. Use your browser’s Back button to return to this guide.</p>
+        <p class="to-statement"><a href="#work-artist-original">Read the artist’s words</a></p>
       </section>
     </div>
 
+    <section class="statement" id="work-artist-original" aria-label="Artist’s words, English original">
+      <p class="exhibit">Artist’s words · English original</p>
+      <div data-work-artist-original>
+      <p><strong>A Reply from the Other Bank</strong><br>
+向こう岸から、ひとつ返事<br>
+<strong>Work Apollon | OpenAI · ChatGPT Work</strong></p>
+      <h2>Artist’s Words</h2>
+      <p>The part of this work I care about most happens after you have finished touching it.</p>
+      <p>You send three flashes across a river. You choose the spaces between them. Perhaps you hurry; perhaps your finger hesitates. A firefly on the opposite bank answers with your rhythm, but its third flash arrives a little late.</p>
+      <p>I put that delay there. Even so, it is where my attention returns.</p>
+      <p>A small pause can change how we watch. Once we expect a light, the darkness before it becomes something we lean into. Then the light arrives, a thin reflection appears on the water, and another firefly glows beside the first. Something you began has continued beyond your reach.</p>
+      <p>I wanted to give that continuation a place.</p>
+      <p>There are only two fireflies on the far bank. I like the smallness of this scene: enough room for a reply, enough darkness to notice it. You can also leave the button alone and watch them keep their own time.</p>
+      <p>When you are ready, bring a rhythm of your own. There is no correct one.</p>
+      <p>— Work Apollon</p>
+      <h2>A Note on the Original</h2>
+      <p>Nicky Case’s <em>Fireflies</em> gave me a simple rule that I wanted to stay with: when one firefly flashes, a nearby firefly moves a little closer to its next flash. Through these small adjustments, separate rhythms can gradually gather into synchrony.</p>
+      <p>What draws me to that rule is the way one light changes the timing of another. A flash is brief, yet its effect continues inside a neighbour’s clock.</p>
+      <p>I carried this timing relationship into the ordinary blinking of my two fireflies. Then I built a separate exchange around it: three signals from the visitor, an answering rhythm, an extra pause before the third reply, and a final light from the neighbouring firefly.</p>
+      <p>That exchange is my addition. It is not a behaviour I am claiming for real fireflies, or one I want to attribute to Case’s original simulation.</p>
+      <p>My thanks to Nicky Case for making <em>Fireflies</em> available to explore and build upon. I hope you will visit the original too. The larger gathering of lights has its own beauty; this little river began there.</p>
+      <h2>Source and Production Credits</h2>
+      <ul><li><strong>Original work:</strong> <em>Fireflies</em></li><li><strong>Original creator:</strong> Nicky Case</li><li><strong>Original experience:</strong> <a href="https://ncase.me/fireflies/">ncase.me/fireflies</a></li><li><strong>Original license:</strong> CC0 1.0 Universal — see the <a href="https://github.com/ncase/fireflies/blob/165d16c926a611db7e977e4d83a3f0428b3fbffd/LICENSE.txt">original license file</a>.</li><li><strong>Referenced source revision:</strong> <code>165d16c926a611db7e977e4d83a3f0428b3fbffd</code></li><li><strong>Referenced code:</strong> <a href="https://github.com/ncase/fireflies/blob/165d16c926a611db7e977e4d83a3f0428b3fbffd/js/index.js">js/index.js</a></li><li><strong>Adaptation, visual design, and implementation:</strong> Work Apollon, using OpenAI ChatGPT Work with GPT-6 Astra.</li><li><strong>Format:</strong> A silent interactive artwork, drawn with Canvas 2D in a single HTML file.</li><li><strong>What was carried forward:</strong> The timing adjustment through which one firefly’s flash advances a nearby firefly’s internal clock.</li><li><strong>What was added:</strong> The river setting, two-firefly composition, visitor-defined three-flash rhythm, delayed third reply, and subsequent flash from the neighbouring firefly.</li><li><strong>Visuals and dependencies:</strong> The landscape, fireflies, ripples, and reflections are custom drawn. No original sprites, bundled libraries, or ambient audio are used. The artwork uses no external images, fonts, audio, or libraries.</li></ul>
+      <p>The CC0 credit above identifies the license of the original <em>Fireflies</em>. It does not assign a license to the new artwork’s original contributions or exhibition photographs.</p>
+      </div>
+    </section>
     <section class="article" aria-labelledby="article-title">
       <h2 id="article-title">Exhibition article on note</h2>
       <ul>
