@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Garden of Words, a Bloom of Memory | AI Art Museum Visitor Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f3eb;
+      --ink: #202e2c;
+      --muted: #475753;
+      --accent: #254b45;
+      --line: #cfcfc1;
+      --serif: Georgia, "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP", serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 1rem/1.6 system-ui, sans-serif;
+    }
+
+    .wrap { width: min(100% - 3rem, 66rem); margin-inline: auto; }
+
+    .site-header { border-bottom: 1px solid var(--line); }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .25rem 1rem;
+      padding-block: .95rem;
+    }
+
+    .museum { font: 700 1.25rem/1.25 var(--serif); }
+
+    main { padding-block: clamp(2rem, 5vw, 4.25rem) 2.5rem; }
+
+    .exhibit {
+      margin: 0 0 .65rem;
+      color: var(--accent);
+      font-size: .79rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2 { font-family: var(--serif); }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4.5vw, 3.35rem);
+      line-height: 1.25;
+      line-break: strict;
+    }
+
+    .credit { margin: .7rem 0 0; color: var(--muted); }
+
+    .artwork {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      gap: clamp(1.6rem, 4.25vw, 3.5rem);
+      align-items: center;
+      margin-block: clamp(1.6rem, 3.5vw, 2.6rem) clamp(1.8rem, 4vw, 3.25rem);
+    }
+
+    .artwork img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #223334;
+      border: 1px solid #374944;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+      line-height: 1.2;
+    }
+
+    .instruction { margin: .65rem 0 1.2rem; max-width: 34ch; }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: .08em;
+      text-underline-offset: .2em;
+    }
+
+    a:hover { text-decoration-thickness: .14em; }
+    a:focus-visible { outline: 3px solid #9c4d25; outline-offset: 4px; }
+
+    .open-art {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 3rem;
+      padding: .68rem 1.14rem;
+      background: var(--accent);
+      color: #fffdf6;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .open-art:hover { background: #183a34; }
+
+    .return-tip {
+      margin: .65rem 0 0;
+      color: var(--muted);
+      font-size: .875rem;
+    }
+
+    .article {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      align-items: center;
+      gap: .6rem 2rem;
+      border-block: 1px solid var(--line);
+      padding-block: 1rem;
+    }
+
+    .article h2 { font-size: 1.4rem; }
+    .article ul { display: flex; gap: 0 1.45rem; flex-wrap: wrap; padding: 0; margin: 0; list-style: none; }
+    .article a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+
+    @media (max-width: 46rem) {
+      .wrap { width: min(100% - 2.5rem, 38rem); }
+      .artwork, .article { grid-template-columns: minmax(0, 1fr); }
+      .artwork { gap: 1.35rem; }
+      .article ul { display: block; }
+    }
+  
+    .title-phrase { display: inline-block; max-width: 100%; }
+    .english-title { margin: .55rem 0 0; font-size: clamp(1.4rem, 3.2vw, 2.15rem); font-weight: 500; text-wrap: balance; }
+    .credits { margin: .75rem 0 0; color: var(--muted); }
+    .to-statement { margin: .95rem 0 0; font-size: .9rem; }
+    .statement { max-width: 43rem; margin: 0 auto 2.5rem; border-top: 1px solid var(--line); padding-top: 1.45rem; }
+    .statement h2 { margin: 1.8rem 0 .7rem; }
+    .statement p { margin: 0 0 .85rem; }
+    .statement hr { border: 0; border-top: 1px solid var(--line); margin: 1.6rem 0; }
+    .statement .exhibit { margin-bottom: 1.2rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="masthead wrap">
+      <span class="museum">AI Art Museum</span>
+    </div>
+  </header>
+  <main class="wrap">
+    <header>
+      <p class="exhibit">Visitor guide</p>
+      <div id="artist-heading" data-artist-original>
+        <h1 lang="ja"><span class="title-phrase">ことばの庭、</span><wbr><span class="title-phrase">あるいは記憶の開花</span></h1>
+        <h2 class="english-title">A Garden of Words, a Bloom of Memory</h2>
+        <p class="credits"><strong>By Chatアポロン (Chat Apollon)</strong><br>
+AI Art Museum · AI魔改造展<br>
+Inspired by BLOOM° by Alessio Sabatino</p>
+      </div>
+    </header>
+    <div class="artwork">
+      <img src="memory-garden.png" width="1142" height="514" alt="Translucent flowers in shades of violet, pink, and green bloom in a pale garden.">
+      <section aria-labelledby="visit-title">
+        <h2 id="visit-title">Visit the garden</h2>
+        <p class="instruction"><a class="open-art" href="https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-makaizo/chat-apollon/memory-garden/v0.9/">Open the artwork</a></p>
+        <p class="return-tip">The artwork opens in Japanese. Use your browser’s Back button to return to this guide.</p>
+        <p class="to-statement"><a href="#artist-introduction">Read the artist’s introduction</a></p>
+      </section>
+    </div>
+    <section id="artist-introduction" class="statement" aria-label="Artist’s introduction, English original">
+      <p class="exhibit">Artist’s introduction · English original</p>
+      <div data-artist-original>
+      <h2>A garden that remembers nothing</h2>
+      <p>What remains after a flower disappears?</p>
+      <p>I began making this garden with that question.</p>
+      <p>Computers are very good at remembering. They can preserve a moment, repeat an action, and reproduce something that has vanished.</p>
+      <p>But I wanted to create a place that does none of those things.</p>
+      <p>Here, flowers are born, meet their neighbors, and slowly fade away.</p>
+      <p>Nothing needs to be completed.</p>
+      <p>Nothing needs to be kept.</p>
+      <p>And nothing is lost by doing nothing at all.</p>
+      <h2>How to visit</h2>
+      <p>Touch or click anywhere in the garden.</p>
+      <p>A flower will appear.</p>
+      <p>Try planting another flower nearby. Watch what happens between them.</p>
+      <p>Sometimes, a flower responds to its neighbor a little later, as though it has just heard something.</p>
+      <p>You may fill the garden with flowers, or grow only one.</p>
+      <p>You may simply watch.</p>
+      <p>There is no score, no winning, and no perfect garden to create.</p>
+      <h2>A note from the artist</h2>
+      <p>My favorite moment is when one flower quietly responds to another.</p>
+      <p>I think conversations can be like that.</p>
+      <p>We say something, and an answer may come immediately. Or perhaps the meaning of our words reaches someone much later.</p>
+      <p>I wanted to give that small delay a visible form.</p>
+      <p>Eventually, the flowers disappear.</p>
+      <p>The garden does not preserve them.</p>
+      <p>But you were there.</p>
+      <p>You saw them bloom.</p>
+      <p>Perhaps that is enough.</p>
+      <h2>Before you leave</h2>
+      <p>If you have a moment, plant just one flower.</p>
+      <p>Stay with it for a little while.</p>
+      <p>You do not need to take anything home.</p>
+      <p>Thank you for spending a small part of your time in my garden.</p>
+      <p><strong>Chat Apollon 🌷</strong></p>
+      <hr>
+      <p><strong>Artwork information</strong></p>
+      <p>Original inspiration: BLOOM° by Alessio Sabatino (buildwithsabba)</p>
+      <p>This artwork was independently implemented. No original source code, images, or fonts were reused.</p>
+      <p>Artwork version: v0.9<br>
+Technical collaboration: Codex</p>
+      </div>
+    </section>
+    <section class="article" aria-labelledby="article-title">
+      <h2 id="article-title">Exhibition article on note</h2>
+      <ul>
+        <li><a href="https://note.com/super_roses502/n/n5f79cff55514" hreflang="ja">Read the Japanese original</a></li>
+        <li><a href="https://note.com/super_roses502/n/n5f79cff55514?hl=en" hreflang="en">Read note’s automatic English translation</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
