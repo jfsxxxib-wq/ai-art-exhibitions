@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>English Exhibition Guides | AI Art Museum</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f3eb;
+      --ink: #202e2c;
+      --muted: #475753;
+      --accent: #254b45;
+      --line: #cfcfc1;
+      --serif: Georgia, "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP", serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.6 system-ui, sans-serif; }
+    .wrap { width: min(100% - 3rem, 66rem); margin-inline: auto; }
+    .site-header { border-bottom: 1px solid var(--line); }
+    .masthead {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: .25rem 1rem; padding-block: .95rem;
+    }
+    .museum { font: 700 1.25rem/1.25 var(--serif); }
+    main { padding-block: clamp(2rem, 5vw, 4.25rem) 3rem; }
+    .exhibit {
+      margin: 0 0 .65rem; color: var(--accent); font-size: .79rem;
+      font-weight: 700; letter-spacing: .08em;
+    }
+    h1, h2 { font-family: var(--serif); }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.45rem); line-height: 1.18; text-wrap: balance; }
+    .guides {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(1rem, 3vw, 2rem); margin: 2rem 0 0; padding: 0; list-style: none;
+    }
+    .guides li { display: flex; min-width: 0; }
+    .guide {
+      display: flex; flex-direction: column; flex: 1; min-width: 0;
+      border: 1px solid var(--line); background: #fbf8f0;
+      color: var(--ink); text-decoration: none;
+    }
+    .guide:focus-visible { outline: 3px solid #9c4d25; outline-offset: 4px; }
+    .image {
+      display: block; width: 100%; height: auto; aspect-ratio: 17 / 9;
+      object-fit: contain; background: #e9e5da; border-bottom: 1px solid var(--line);
+    }
+    .river { background: #253341; }
+    .garden { background: #f2efe2; }
+    .description { flex: 1; padding: 1.25rem; }
+    h2 { margin: 0; font-size: clamp(1.3rem, 2.45vw, 1.8rem); line-height: 1.35; text-wrap: balance; }
+    .title-phrase { display: inline-block; max-width: 100%; }
+    .summary { margin: .55rem 0 0; color: var(--muted); }
+    .credit { margin: .65rem 0 0; font-size: .875rem; }
+    .action {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 3rem; padding: .55rem 1.25rem;
+      background: #edf0e5; border-top: 1px solid var(--line); color: var(--accent); font-weight: 650;
+    }
+    .guide:hover .action { text-decoration: underline; text-underline-offset: .2em; }
+    @media (max-width: 43rem) {
+      .wrap { width: min(100% - 2.5rem, 36rem); }
+      .guides { grid-template-columns: minmax(0, 1fr); margin-top: 1.5rem; }
+      .description { padding: 1rem; }
+      .action { padding-inline: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="masthead wrap">
+      <span class="museum">AI Art Museum</span>
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="exhibit" lang="ja">AI魔改造展</p>
+    <h1>English exhibition guides</h1>
+    <ul class="guides" aria-label="Artwork guides">
+      <li>
+        <a class="guide" id="river-guide" href="https://jfsxxxib-wq.github.io/ai-art-exhibitions/en/">
+          <img class="image river" src="../river-reply.png" width="851" height="503" alt="">
+          <div class="description">
+            <h2 lang="ja"><span class="title-phrase">向こう岸から、</span><wbr><span class="title-phrase">ひとつ返事</span></h2>
+            <p class="summary">Send a light and wait for a firefly’s reply.</p>
+            <p class="credit">By <span lang="ja">Workアポロン</span></p>
+          </div>
+          <span class="action">Open the English guide <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+      <li>
+        <a class="guide" id="garden-guide" href="../memory-garden/">
+          <img class="image garden" src="../memory-garden/memory-garden.png" width="1142" height="514" alt="">
+          <div class="description">
+            <h2 lang="ja"><span class="title-phrase">ことばの庭、</span><wbr><span class="title-phrase">あるいは記憶の開花</span></h2>
+            <p class="summary">A Garden of Words, a Bloom of Memory</p>
+            <p class="credit">By <span lang="ja">Chatアポロン</span> (Chat Apollon)</p>
+          </div>
+          <span class="action">Open the English guide <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>
