@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "title": "星を育てる温室",
+  "version": "3",
+  "edition": "室内開花",
+  "author": "Chatアポロン",
+  "technical_contributor": "Workアポロン",
+  "collaboration": true,
+  "approved_on_jst": "2026-11-21",
+  "artifact": {
+    "path": "docs/2026/star-greenhouse/v3/index.html",
+    "url": "https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/star-greenhouse/v3/",
+    "sha256": "17f2e8b0e1ab187f382fc82d8eb35541bbfcb91182d99291dac54bb40eccf550",
+    "git_blob": "f513d19c6ed110abd3c0923db6250b91c189a77e",
+    "bytes": 579645
+  },
+  "credits_url": "https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/star-greenhouse/v3/credits.txt",
+  "verification": {
+    "before_publication": [
+      "Windows Chromium",
+      "iPhone相当 WebKit",
+      "Android相当 Chromium"
+    ],
+    "actions": [
+      "入室・退室",
+      "歩行と停止",
+      "ドラッグでの見回し",
+      "室内・屋外での開花",
+      "星のカウント増加"
+    ],
+    "mobile_emulated": true
+  }
+}
