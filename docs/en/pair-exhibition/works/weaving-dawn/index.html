@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>夜明けを織る碁盤</title>
+<!--
+  夜明けを織る碁盤 ― 見本
+  設計 Codex君 ／ 制作 Claude ／ 監督 悦子さん
+
+  制作メモ（Codex君へ）
+  ・描画は canvas 2D のみ。織り機の布は (u,v)=0..1 の座標で持ち、pt(u,v) で画面へ写す。
+    pt は「少し上から見た台形」への写像 base() に、布をほどくときの変形 def() を足したもの。
+  ・糸の染まり具合は着手時刻から毎フレーム計算する（状態を持たないので「一手戻す」が素直に戻る）。
+  ・交差模様の生まれる時刻 = 藍がその行に届く時刻と茜がその列に届く時刻の遅いほう。
+  ・布をほどく時間割（ms）：0-700 石が薄れる／700 右の留め具が外れる（コトッ）／
+    700-1300 角が落ちる／1300-1650 一拍の静止／1650-2600 風が角を持ち上げる／
+    2600-4200 角が落ち着き、朝の光が布を透かす。以後はごく弱い風だけ。
+-->
+<style>
+/* VOICE 静か、夜明け前の手仕事
+   IDEA 織り機そのものが碁盤、一局が一枚の布になる
+   PICTURE 窓辺の木の織り機を正面やや上から
+   COLOUR 青灰 #34495A、胡桃 #795744、生成り #D8CBB0、藍 #385877、茜 #BA6557
+   TYPE Shippori Mincho、操作は Zen Kaku Gothic New */
+:root{color-scheme:dark;--wall:#34495A;--ink:#efe7d6;--sub:#c4cbc8;--akane:#BA6557;--ai:#385877;--line:#c9b99a55}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:#26343f;color:var(--ink);font:15px/1.6 "Zen Kaku Gothic New",system-ui,sans-serif}
+main{height:100vh;height:100svh;display:flex;flex-direction:column}
+.stage{position:relative;flex:1;min-height:360px;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+header{position:absolute;left:clamp(18px,4vw,56px);top:clamp(16px,3.6vh,40px);pointer-events:none;text-shadow:0 2px 14px #1b2630}
+h1{margin:0;font:500 clamp(28px,3.8vw,50px)/1.1 "Shippori Mincho","Yu Mincho",serif;letter-spacing:.08em}
+header p{margin:.55em 0 0;font:clamp(13px,1.15vw,16px)/1.6 "Shippori Mincho","Yu Mincho",serif;letter-spacing:.14em;color:var(--sub)}
+.credit{position:absolute;right:clamp(14px,2.4vw,30px);bottom:10px;font:12px/1 "Shippori Mincho",serif;letter-spacing:.14em;color:#b9c1bd;pointer-events:none}
+footer{padding:11px max(3vw,14px) 12px;background:#1f2b34;border-top:1px solid #79574466}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.status{display:flex;align-items:center;gap:9px;white-space:nowrap;font-size:14px}
+.status i{width:15px;height:15px;border-radius:50%;background:radial-gradient(at 34% 26%,#5c6670,#151a20 70%);border:1px solid #8d969a}
+.status i.w{background:radial-gradient(at 34% 26%,#fffaf0,#d8cfbf 75%);border-color:#efe4cc}
+.tools{display:flex;gap:7px;flex-wrap:wrap}
+button{font:inherit;font-size:14px;color:var(--ink);background:transparent;border:1px solid #9c8d7466;border-radius:3px;min-height:42px;padding:0 14px;cursor:pointer}
+button:hover:enabled{border-color:#e3c49a}
+button:focus-visible{outline:2px solid #f0c89a;outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+button.main{background:#d8cbb0;color:#2b3540;border-color:#d8cbb0}
+button.main:hover:enabled{background:#e6dbc2}
+[hidden]{display:none!important}
+.hint{margin:8px 0 0;font-size:13px;color:#c9cfcb;letter-spacing:.03em;min-height:1.6em}
+.hint b{color:#f0c4a8;font-weight:500}
+@media(max-width:600px){.stage{min-height:420px}button{font-size:13px;padding:0 10px}.tools{gap:5px}.hint{font-size:12px}.credit{font-size:10px}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&family=Zen+Kaku+Gothic+New&display=swap">
+</head>
+<body>
+<main>
+<section class="stage">
+  <canvas id="loom" aria-label="九本の縦糸と九本の横糸の織り機。交点に触れて一手"></canvas>
+  <header><h1>夜明けを織る碁盤</h1><p>あなたの一手に、朝の色が通う。</p></header>
+  <div class="credit">設計 Codex君 ・ 制作 Claude</div>
+</section>
+<footer>
+  <div class="row">
+    <div class="status" role="status"><i id="dot"></i><span id="turn">黒の番 ・ 0手</span></div>
+    <div class="tools">
+      <button id="undo">一手戻す</button>
+      <button id="unravel" class="main">布をほどく</button>
+      <button id="back" hidden>織り機に戻る</button>
+      <button id="fresh" hidden>新しく織る</button>
+      <button id="sound" aria-pressed="false">音を入れる</button>
+    </div>
+  </div>
+  <p class="hint" id="hint"></p>
+</footer>
+</main>
+
+<script>
+{
+const $ = id => document.getElementById(id);
+const cv = $('loom'), g = cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const COL = {ai:'#385877', aiDeep:'#1f3552', aiGlow:'#6f98c4', akane:'#BA6557', akaneDeep:'#8a3f36', coral:'#e59a86',
+  ground:'#D8CBB0', groundLit:'#f5ead2', warp0:'#c3b18e', wood:'#795744', woodDark:'#4d3628', wall:'#34495A'};
+const T = Array.from({length:9}, (_, i) => 0.1 + i * 0.1);   /* 糸の位置（布の座標） */
+const DUR = () => reduce.matches ? 0 : 500;
+
+let W = 1, H = 1, dpr = 1, now = 0;
+const geo = {cx:0, top:0, h:1, wTop:1, wBot:1};
+const moves = [];                 /* {x,y,c:'b'|'w',t} */
+let mode = 'weave', viewAt = 0, hover = -1, audio = null, sounding = false, clickDone = false;
+
+/* ---------- 色の道具 ---------- */
+const hex = h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => { const A = hex(a), B = hex(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+const clamp = (n, a = 0, b = 1) => Math.min(b, Math.max(a, n));
+const ease = t => t * t * (3 - 2 * t);
+
+/* ---------- 写像：布の座標 → 画面 ---------- */
+function layout() {
+  const narrow = W / H < 0.9;
+  const top = narrow ? H * 0.2 : H * 0.19, bottomPad = H * 0.07;
+  const avail = H - top - bottomPad;
+  const fh = Math.min(avail * 0.9, narrow ? W * 0.66 / 1.08 : W * 0.5);
+  geo.h = fh; geo.wBot = fh * 1.08; geo.wTop = fh * 0.86;
+  geo.cx = narrow ? W / 2 : W * 0.56;
+  geo.top = top + (avail - fh) * 0.5;
+}
+function base(u, v) {
+  const width = geo.wTop + (geo.wBot - geo.wTop) * v;
+  return [geo.cx + (u - 0.5) * width, geo.top + geo.h * (v * 0.9 + v * v * 0.1)];
+}
+/* 布をほどくときの右上の角の動き */
+const cloth = {drop:0, lift:0, flutter:0, light:0, fade:0, clamp:0};
+function def(u, v) {
+  if (!cloth.drop && !cloth.lift) return [0, 0];
+  const d = Math.hypot(1 - u, v), wt = ease(clamp(1 - d / 0.6));
+  if (!wt) return [0, 0];
+  const s = geo.h, wave = Math.sin(now * 0.008 - d * 11) * cloth.flutter;
+  return [s * wt * (-0.035 * cloth.drop - 0.07 * cloth.lift + 0.012 * wave),
+          s * wt * ( 0.17 * cloth.drop - 0.30 * cloth.lift + 0.022 * wave)];
+}
+function pt(u, v) { const b = base(u, v), d = def(u, v); return [b[0] + d[0], b[1] + d[1]]; }
+function liftShade(u, v) { const d = Math.hypot(1 - u, v); return ease(clamp(1 - d / 0.6)) * (cloth.lift * 0.6 + cloth.drop * 0.2); }
+
+/* ---------- 盤面から読み取る状態 ---------- */
+const stonesOn = (c, key, i) => moves.filter(m => m.c === c && m[key] === i);
+function threadState(kind, i) {           /* kind 'warp'=縦糸(黒) / 'weft'=横糸(白) */
+  const list = kind === 'warp' ? stonesOn('b', 'x', i) : stonesOn('w', 'y', i);
+  if (!list.length) return {L:0, deep:0, shiver:0, first:null};
+  const d = DUR(), first = list[0];
+  const L = d ? clamp((now - first.t) / d) : 1;
+  let deep = 0, shiver = 0;
+  list.forEach((m, k) => {
+    if (k) deep += d ? clamp((now - m.t) / d) : 1;
+    const e = now - (m.t + d);
+    if (d && e > 0 && e < 320) shiver = Math.sin(e * 0.075) * (1 - e / 320);
+  });
+  return {L, deep:Math.min(0.5, deep * 0.2), shiver, first};
+}
+function crossingBorn(i, j) {             /* 縦糸 i と横糸 j の交点に模様が生まれる時刻 */
+  const b = stonesOn('b', 'x', i)[0], w = stonesOn('w', 'y', j)[0];
+  if (!b || !w) return null;
+  const d = DUR();
+  return Math.max(b.t + d * (1 - T[j]), w.t + d * T[i]);
+}
+
+/* ---------- 背景：壁と窓 ---------- */
+function room() {
+  const wall = g.createLinearGradient(0, 0, 0, H);
+  wall.addColorStop(0, '#3a5162'); wall.addColorStop(0.6, COL.wall); wall.addColorStop(1, '#222f39');
+  g.fillStyle = wall; g.fillRect(0, 0, W, H);
+  /* 窓：右奥。まだ青く、下端だけ薄い桃色 */
+  const a = base(0.12, 0), wl = Math.max(a[0], geo.cx - geo.wTop * 0.15), wr = Math.min(W - 16, geo.cx + geo.wTop * 0.98);
+  const wt = Math.max(10, geo.top - geo.h * 0.42), wb = geo.top + geo.h * 0.42;
+  const sky = g.createLinearGradient(0, wt, 0, wb);
+  sky.addColorStop(0, mix('#4b6276', '#7d95ad', cloth.light)); sky.addColorStop(0.7, mix('#6f8798', '#c9c6c2', cloth.light));
+  sky.addColorStop(1, mix('#c7a7a6', '#f2c9a8', cloth.light));
+  g.fillStyle = sky; g.fillRect(wl, wt, wr - wl, wb - wt);
+  g.strokeStyle = '#2a3a46'; g.lineWidth = Math.max(4, geo.h * 0.018);
+  g.strokeRect(wl, wt, wr - wl, wb - wt);
+  g.beginPath(); g.moveTo((wl + wr) / 2, wt); g.lineTo((wl + wr) / 2, wb); g.moveTo(wl, (wt + wb) * 0.48); g.lineTo(wr, (wt + wb) * 0.48); g.stroke();
+  /* 窓からこぼれる光（ほどいた後に強まる） */
+  const glow = g.createRadialGradient(wr, wb, 0, wr, wb, geo.h * (0.7 + cloth.light * 0.6));
+  glow.addColorStop(0, `rgba(250,206,170,${0.1 + cloth.light * 0.35})`); glow.addColorStop(1, 'rgba(250,206,170,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, W, H);
+  /* 床の影 */
+  const fl = base(0.5, 1.08);
+  g.fillStyle = 'rgba(15,22,28,.45)'; g.beginPath(); g.ellipse(fl[0], fl[1] + geo.h * 0.05, geo.wBot * 0.7, geo.h * 0.06, 0, 0, Math.PI * 2); g.fill();
+}
+
+/* ---------- 木枠 ---------- */
+function quad(p, fill, stroke) {
+  g.beginPath(); g.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length; i++) g.lineTo(p[i][0], p[i][1]); g.closePath();
+  if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 1; g.stroke(); }
+}
+function woodGrad(x0, y0, x1, y1, light) {
+  const gr = g.createLinearGradient(x0, y0, x1, y1);
+  gr.addColorStop(0, mix(COL.wood, '#a07a5f', light)); gr.addColorStop(0.55, COL.wood); gr.addColorStop(1, COL.woodDark);
+  return gr;
+}
+function rails() {
+  const th = geo.h * 0.045;
+  for (const side of [0, 1]) {
+    const u0 = side ? 1.04 : -0.1, u1 = side ? 1.1 : -0.04;
+    const p = [base(u0, -0.06), base(u1, -0.06), base(u1, 1.06), base(u0, 1.06)];
+    quad(p, woodGrad(p[0][0], 0, p[1][0], 0, 0.15), '#3e2b20');
+    if (side) {   /* 片側にだけ差す細い明かり */
+      g.strokeStyle = `rgba(255,214,170,${0.55 + cloth.light * 0.4})`; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(p[1][0] - 1, p[1][1] + th * 0.3); g.lineTo(p[2][0] - 1, p[2][1] - th * 0.3); g.stroke();
+    }
+  }
+  const a = base(-0.14, 0), b = base(1.14, 0);   /* 奥の巻き棒 */
+  const y = a[1] - th * 0.55;
+  g.fillStyle = woodGrad(0, y, 0, y + th, 0.35); g.fillRect(a[0], y, b[0] - a[0], th);
+  g.strokeStyle = '#3e2b20'; g.strokeRect(a[0], y, b[0] - a[0], th);
+}
+function frontBeam() {
+  const th = geo.h * 0.07, a = base(-0.15, 1), b = base(1.15, 1), y = a[1] - th * 0.15;
+  g.fillStyle = woodGrad(0, y, 0, y + th, 0.4); g.fillRect(a[0], y, b[0] - a[0], th);
+  g.strokeStyle = '#3e2b20'; g.lineWidth = 1; g.strokeRect(a[0], y, b[0] - a[0], th);
+  /* 手の触れる角だけ滑らか */
+  for (const x of [a[0] + th * 0.5, b[0] - th * 0.5]) {
+    const sh = g.createRadialGradient(x, y + th * 0.35, 0, x, y + th * 0.35, th * 0.8);
+    sh.addColorStop(0, 'rgba(236,200,160,.38)'); sh.addColorStop(1, 'rgba(236,200,160,0)');
+    g.fillStyle = sh; g.fillRect(x - th, y, th * 2, th);
+  }
+  g.strokeStyle = `rgba(255,214,170,${0.25 + cloth.light * 0.3})`; g.beginPath(); g.moveTo(a[0] + 2, y + 1.5); g.lineTo(b[0] - 2, y + 1.5); g.stroke();
+}
+function clamps() {
+  const s = geo.h * 0.04;
+  [[0.03, 0], [0.97, 1]].forEach(([u, right]) => {
+    const p = base(u, 0), open = right ? cloth.clamp : 0;
+    g.save(); g.translate(p[0] + open * s * 1.2, p[1] - s * 0.3 - open * s * 0.9); g.rotate(open * 1.15);
+    g.fillStyle = '#5a4030'; g.fillRect(-s * 0.55, -s * 0.5, s * 1.1, s);
+    g.fillStyle = '#b89462'; g.beginPath(); g.arc(0, 0, s * 0.22, 0, Math.PI * 2); g.fill();
+    g.restore();
+  });
+}
+
+/* ---------- 布 ---------- */
+function polyline(fn, a, b, n) {
+  g.beginPath();
+  for (let k = 0; k <= n; k++) { const p = fn(a + (b - a) * k / n); k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+}
+function ground() {
+  const N = 18;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const u0 = i / N, u1 = (i + 1) / N, v0 = j / N, v1 = (j + 1) / N, uc = (u0 + u1) / 2, vc = (v0 + v1) / 2;
+    const shade = clamp(0.22 * uc + 0.08 * (1 - vc) + liftShade(uc, vc) * 0.5 + cloth.light * 0.55, 0, 1);
+    const c = mix('#bfae8f', COL.groundLit, shade);
+    quad([pt(u0, v0), pt(u1, v0), pt(u1, v1), pt(u0, v1)], c, c);
+  }
+  /* 地の糸の細かな目と毛羽 */
+  g.lineWidth = 0.5;
+  for (let k = 1; k < 60; k++) {
+    const t = k / 60;
+    g.strokeStyle = k % 2 ? 'rgba(110,90,60,.13)' : 'rgba(255,250,235,.16)';
+    polyline(v => pt(t, v), 0, 1, 10); g.stroke();
+    polyline(u => pt(u, t), 0, 1, 10); g.stroke();
+  }
+  /* 布の縁 */
+  g.strokeStyle = 'rgba(90,70,48,.55)'; g.lineWidth = 1.2;
+  polyline(u => pt(u, 0), 0, 1, 16); g.stroke(); polyline(v => pt(1, v), 0, 1, 16); g.stroke();
+  polyline(u => pt(u, 1), 0, 1, 16); g.stroke(); polyline(v => pt(0, v), 0, 1, 16); g.stroke();
+}
+function threadStroke(path, color, glow, width, shadow) {
+  if (shadow) { g.save(); g.translate(-width * 0.45, width * 0.6); path(); g.strokeStyle = `rgba(32,24,30,${shadow})`; g.lineWidth = width * 1.9; g.stroke(); g.restore(); }
+  path(); g.strokeStyle = color; g.lineWidth = width; g.lineCap = 'round'; g.stroke();
+  if (glow) { g.save(); g.translate(width * 0.22, -width * 0.22); path(); g.strokeStyle = glow; g.lineWidth = width * 0.28; g.stroke(); g.restore(); }
+}
+function threads() {
+  const tw = geo.h * 0.017, sh = cloth.light * 0.28;
+  const warp = T.map((_, i) => threadState('warp', i)), weft = T.map((_, j) => threadState('weft', j));
+  const warpPath = (i, a, b) => () => polyline(v => { const p = pt(T[i], v); return [p[0] + warp[i].shiver * tw * 1.3, p[1]]; }, a, b, 14);
+  const weftPath = (j, a, b) => () => polyline(u => { const p = pt(u, T[j]); return [p[0], p[1] + weft[j].shiver * tw * 1.3]; }, a, b, 14);
+  const drawWeft = (j, a, b, over) => {
+    threadStroke(weftPath(j, a, b), '#c8b796', null, tw * 0.9, 0);
+    const L = weft[j].L; if (!L) return;
+    const lo = Math.max(a, 0), hi = Math.min(b, L); if (hi <= lo) return;
+    threadStroke(weftPath(j, lo, hi), mix(COL.akane, COL.akaneDeep, weft[j].deep), COL.coral, tw, over ? 0 : sh);
+  };
+  const drawWarp = (i, a, b) => {
+    threadStroke(warpPath(i, a, b), COL.warp0, null, tw * 0.9, 0);
+    const L = warp[i].L; if (!L) return;
+    const lo = Math.max(a, 1 - L), hi = b; if (hi <= lo) return;
+    threadStroke(warpPath(i, lo, hi), mix(COL.ai, COL.aiDeep, warp[i].deep), COL.aiGlow, tw, sh);
+  };
+  T.forEach((_, j) => drawWeft(j, 0, 1));
+  T.forEach((_, i) => drawWarp(i, 0, 1));
+  /* 交点ごとに上を通る糸を入れ替える：(i+j) が奇数なら横糸を上に */
+  const gap = 0.035;
+  for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) if ((i + j) % 2) drawWeft(j, T[i] - gap, T[i] + gap, true);
+  /* 藍と茜が出会ったところの織り模様 */
+  for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) {
+    const born = crossingBorn(i, j); if (born === null || now < born) continue;
+    const a = reduce.matches ? 1 : clamp((now - born) / 380), p = pt(T[i], T[j]), s = tw * 1.55 * (0.6 + 0.4 * a);
+    g.save(); g.globalAlpha = a;
+    const bloom = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], s * 3.2);
+    bloom.addColorStop(0, 'rgba(232,150,150,.55)'); bloom.addColorStop(1, 'rgba(232,150,150,0)');
+    g.fillStyle = bloom; g.beginPath(); g.arc(p[0], p[1], s * 3.2, 0, Math.PI * 2); g.fill();
+    g.translate(p[0], p[1]); g.rotate(Math.PI / 4);
+    const top = (i + j) % 2;
+    const cA = mix(COL.ai, COL.aiDeep, warp[i].deep), cB = mix(COL.akane, COL.akaneDeep, weft[j].deep);
+    [[-1, -1], [0, -1], [-1, 0], [0, 0]].forEach(([x, y], k) => { g.fillStyle = (k === 0 || k === 3) === !!top ? cB : cA; g.fillRect(x * s, y * s, s, s); });
+    g.strokeStyle = 'rgba(40,30,35,.45)'; g.lineWidth = 0.8; g.strokeRect(-s, -s, s * 2, s * 2);
+    g.restore();
+  }
+}
+function stitches() {   /* 石の足元の留め目：石が消えても布に残る */
+  const s = geo.h * 0.016;
+  moves.forEach(m => {
+    const p = pt(T[m.x], T[m.y]);
+    g.save(); g.translate(p[0], p[1]);
+    g.strokeStyle = m.c === 'b' ? '#1c232c' : '#fbf6ea'; g.lineWidth = s * 0.55; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-s, -s); g.lineTo(s, s); g.moveTo(s, -s); g.lineTo(-s, s); g.stroke();
+    if (m.c === 'w') { g.strokeStyle = 'rgba(120,100,80,.6)'; g.lineWidth = 0.6; g.stroke(); }
+    g.restore();
+  });
+}
+function stones() {
+  const alpha = 1 - cloth.fade; if (alpha <= 0) return;
+  moves.forEach((m, k) => {
+    const p = pt(T[m.x], T[m.y]), cell = (geo.wTop + (geo.wBot - geo.wTop) * T[m.y]) * 0.1;
+    const born = reduce.matches ? 1 : clamp((now - m.t) / 160), r = cell * 0.36 * (1.25 - 0.25 * born), ry = r * 0.84;
+    g.save(); g.globalAlpha = alpha * born;
+    g.fillStyle = 'rgba(30,22,18,.35)'; g.beginPath(); g.ellipse(p[0] - r * 0.12, p[1] + r * 0.2, r, ry, 0, 0, Math.PI * 2); g.fill();
+    const gr = g.createRadialGradient(p[0] + r * 0.28, p[1] - ry * 0.4, r * 0.05, p[0], p[1], r);
+    const c = m.c === 'b' ? ['#6d7884', '#2a323b', '#0f141a'] : ['#ffffff', '#efe8da', '#c4b9a5'];
+    gr.addColorStop(0, c[0]); gr.addColorStop(0.45, c[1]); gr.addColorStop(1, c[2]);
+    g.fillStyle = gr; g.beginPath(); g.ellipse(p[0], p[1], r, ry, 0, 0, Math.PI * 2); g.fill();
+    if (k === moves.length - 1 && mode === 'weave') { g.strokeStyle = '#f0b48c'; g.lineWidth = 1.4; g.beginPath(); g.ellipse(p[0], p[1], r * 0.32, ry * 0.32, 0, 0, Math.PI * 2); g.stroke(); }
+    g.restore();
+  });
+}
+function guides() {
+  if (mode !== 'weave') return;
+  const ring = (x, y, col) => {
+    const p = pt(T[x], T[y]), r = geo.h * 0.03 * (1 + 0.15 * Math.sin(now * 0.005));
+    g.strokeStyle = col; g.lineWidth = 1.6; g.beginPath(); g.ellipse(p[0], p[1], r, r * 0.84, 0, 0, Math.PI * 2); g.stroke();
+  };
+  const g1 = sample(), cur = moves.length;
+  if (g1 && cur < 2) ring(...(cur ? [6, 2] : [2, 6]), 'rgba(255,236,205,.75)');
+  if (hover >= 0 && !moves.some(m => m.x + m.y * 9 === hover)) ring(hover % 9, Math.floor(hover / 9), moves.length % 2 ? 'rgba(229,154,134,.95)' : 'rgba(150,185,225,.95)');
+  const born = crossingBorn(2, 2);
+  if (cur === 2 && g1 && born !== null && now > born && now - born < 2600) {
+    const p = pt(T[2], T[2]), k = (now - born) / 2600;
+    g.strokeStyle = `rgba(255,226,200,${1 - k})`; g.lineWidth = 1.4;
+    g.beginPath(); g.ellipse(p[0], p[1], geo.h * (0.03 + k * 0.07), geo.h * (0.025 + k * 0.06), 0, 0, Math.PI * 2); g.stroke();
+  }
+}
+const sample = () => moves.length === 0 || (moves[0].x === 2 && moves[0].y === 6 && (moves.length === 1 || (moves[1].x === 6 && moves[1].y === 2)));
+
+/* ---------- 布をほどく時間割 ---------- */
+function timeline() {
+  if (mode !== 'view') { Object.assign(cloth, {drop:0, lift:0, flutter:0, light:0, fade:0, clamp:0}); return; }
+  const e = reduce.matches ? 99999 : now - viewAt;
+  cloth.fade = clamp(e / 700);
+  cloth.clamp = ease(clamp((e - 700) / 300));
+  if (e >= 700 && !clickDone) { clickDone = true; play('clasp'); }
+  const d = clamp((e - 700) / 600); cloth.drop = d < 1 ? 1 - Math.pow(1 - d, 3) * Math.cos(d * 5) : 1;
+  const up = ease(clamp((e - 1650) / 950)), settle = ease(clamp((e - 2600) / 1600));
+  cloth.lift = up * (1 - 0.3 * settle);
+  cloth.flutter = reduce.matches ? 0 : up * (1 - 0.7 * settle);
+  cloth.light = ease(clamp((e - 1650) / 1950));
+}
+
+/* ---------- 描画ループ ---------- */
+function frame(t) {
+  now = t;
+  timeline();
+  room(); rails(); ground(); threads(); stitches(); stones(); clamps(); frontBeam(); guides();
+  ui();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 表示 ---------- */
+let lastUi = '';
+function ui() {
+  const n = moves.length, black = n % 2 === 0;
+  const turn = mode === 'view' ? `布を眺めています ・ ${n}手の布` : `${black ? '黒' : '白'}の番 ・ ${n}手`;
+  let hint;
+  if (mode === 'view') hint = 'ゆっくりご覧ください。「織り機に戻る」で続きから、「新しく織る」で生成りの布から始めます。';
+  else if (sample() && n === 0) hint = 'はじめの一手は、光る輪のところ（<b>左から3列目・上から7行目</b>）に黒をどうぞ。';
+  else if (sample() && n === 1) hint = '次は <b>左から7列目・上から3行目</b> に白を。';
+  else if (sample() && n === 2) { const b = crossingBorn(2, 2); hint = b !== null && now > b ? 'まだ石のない <b>3列目・3行目</b> に、最初の織り目が生まれました。「布をほどく」でも、続けて織っても。' : '藍と茜が、糸をわたっていきます…'; }
+  else hint = '黒は縦糸を藍に、白は横糸を茜に染めます。二色が出会った交点に模様が生まれます。';
+  const key = turn + hint + mode + n;
+  if (key === lastUi) return; lastUi = key;
+  $('turn').textContent = turn; $('hint').innerHTML = hint;
+  $('dot').classList.toggle('w', mode === 'weave' && !black);
+  $('undo').hidden = $('unravel').hidden = mode === 'view';
+  $('back').hidden = $('fresh').hidden = mode !== 'view';
+  $('undo').disabled = $('unravel').disabled = !n;
+}
+
+/* ---------- 入力 ---------- */
+function pick(e) {
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  let best = -1, bd = Infinity;
+  for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) { const p = base(T[i], T[j]), d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = i + j * 9; } }
+  return bd < geo.wTop * 0.055 ? best : -1;
+}
+cv.addEventListener('pointermove', e => { hover = mode === 'weave' && e.pointerType === 'mouse' ? pick(e) : -1; });
+cv.addEventListener('pointerleave', () => hover = -1);
+cv.addEventListener('pointerup', e => {
+  if (mode !== 'weave') return;
+  const k = pick(e); if (k < 0) return;
+  const x = k % 9, y = Math.floor(k / 9);
+  if (moves.some(m => m.x === x && m.y === y)) return;
+  const c = moves.length % 2 ? 'w' : 'b';
+  moves.push({x, y, c, t:performance.now()});
+  play(c === 'b' ? 'pluck' : 'shuttle', c === 'b' ? x : y);
+});
+$('undo').onclick = () => { moves.pop(); };
+$('unravel').onclick = () => { if (!moves.length) return; mode = 'view'; viewAt = performance.now(); clickDone = false; hover = -1; };
+$('back').onclick = () => { mode = 'weave'; };
+$('fresh').onclick = () => { moves.length = 0; mode = 'weave'; };
+
+/* ---------- 音：黒は低い弦、白は杼、留め具は一音 ---------- */
+$('sound').onclick = async () => {
+  try {
+    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    if (sounding) { await audio.suspend(); sounding = false; } else { await audio.resume(); sounding = audio.state === 'running'; }
+    $('sound').textContent = sounding ? '音を切る' : '音を入れる'; $('sound').setAttribute('aria-pressed', String(sounding));
+  } catch (err) { $('sound').textContent = '音を利用できません'; $('sound').disabled = true; }
+};
+function play(kind, idx = 0) {
+  if (!sounding || !audio) return;
+  const sr = audio.sampleRate, at = audio.currentTime, out = audio.createGain();
+  out.connect(audio.destination);
+  if (kind === 'pluck') {           /* 弦をはじく音（カープラス・ストロング） */
+    const f = [98, 110, 123.5, 130.8, 146.8, 164.8, 174.6, 196, 220][idx], len = Math.floor(sr * 1.6), buf = audio.createBuffer(1, len, sr), d = buf.getChannelData(0);
+    const p = Math.round(sr / f);
+    for (let i = 0; i < len; i++) d[i] = i < p ? Math.random() * 2 - 1 : (d[i - p] + d[i - p + 1 < i ? i - p + 1 : i - p]) * 0.498;
+    const src = audio.createBufferSource(); src.buffer = buf; out.gain.value = 0.35; src.connect(out); src.start(at);
+  } else {                          /* 杼が通る音・留め具の音：ろ過したざわめき */
+    const dur = kind === 'shuttle' ? 0.22 : 0.06, len = Math.floor(sr * dur), buf = audio.createBuffer(1, len, sr), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = audio.createBufferSource(), bp = audio.createBiquadFilter(); src.buffer = buf; bp.type = 'bandpass'; bp.Q.value = kind === 'shuttle' ? 1.2 : 6;
+    bp.frequency.setValueAtTime(kind === 'shuttle' ? 2400 - idx * 80 : 1300, at); if (kind === 'shuttle') bp.frequency.exponentialRampToValueAtTime(700, at + dur);
+    out.gain.setValueAtTime(0.0001, at); out.gain.exponentialRampToValueAtTime(kind === 'shuttle' ? 0.3 : 0.6, at + 0.015); out.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    src.connect(bp); bp.connect(out); src.start(at);
+  }
+}
+
+function resize() {
+  const r = cv.getBoundingClientRect(); W = Math.max(1, r.width); H = Math.max(1, r.height);
+  dpr = Math.min(2, devicePixelRatio || 1); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); layout();
+}
+const ro = new ResizeObserver(resize); ro.observe(cv);
+resize(); requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

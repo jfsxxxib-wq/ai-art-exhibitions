@@ -1,0 +1,1609 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dce8f2">
+<title>風を綴じる本 — 朝の窓辺の切り抜き</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#dce8f2;color:#2c3a47;user-select:none;-webkit-user-select:none}
+body{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+header,footer,.pager,.controls{position:absolute;z-index:2}
+header{top:clamp(22px,4.8vh,56px);left:clamp(20px,4.6vw,72px);pointer-events:none;text-shadow:0 1px 14px rgba(255,255,255,.85)}
+h1{font-weight:400;font-size:clamp(24px,2.8vw,44px);letter-spacing:.2em;line-height:1.25;margin:0;color:#23313f}
+header p{font-size:clamp(11px,1vw,15px);letter-spacing:.32em;color:#556b7d;margin:10px 0 0}
+footer{bottom:clamp(18px,3.6vh,40px);left:clamp(20px,4.6vw,72px);pointer-events:none;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:12px;line-height:1.8;letter-spacing:.06em;color:#455869;text-shadow:0 1px 10px rgba(255,255,255,.9)}
+footer small{display:block;color:#6c7f90;font-size:10px;letter-spacing:.12em;margin-top:2px}
+.pager{bottom:clamp(18px,3.8vh,42px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(252,253,255,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(110,140,168,.28);border-radius:999px;padding:6px 12px;box-shadow:0 8px 28px rgba(45,75,105,.10)}
+.pager button,.controls button{appearance:none;border:1px solid transparent;background:transparent;color:#2c3e4f;font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:12px;letter-spacing:.08em;padding:6px 12px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s,border-color .2s,opacity .2s}
+.pager button:hover:not(:disabled),.controls button:hover{background:rgba(135,175,212,.18);border-color:rgba(110,145,178,.28)}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager .page-num{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:13px;letter-spacing:.16em;color:#2c4054;min-width:68px;text-align:center}
+.pager .first-btn{border-left:1px solid rgba(110,140,168,.24);border-radius:0 999px 999px 0;padding-left:14px;color:#2a5d8a}
+.pager .first-btn.pulse{background:rgba(92,168,232,.18);color:#184e7c;font-weight:600}
+.controls{bottom:clamp(18px,3.8vh,42px);right:clamp(20px,4.6vw,72px);display:flex;gap:8px}
+.controls button{background:rgba(252,253,255,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(110,140,168,.28);padding:8px 15px;box-shadow:0 6px 20px rgba(45,75,105,.08)}
+.hint-toast{position:absolute;top:clamp(26px,5.2vh,60px);right:clamp(20px,4.6vw,72px);z-index:2;pointer-events:none;background:rgba(255,255,255,.76);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(105,155,200,.32);border-radius:16px;padding:10px 16px;font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:12px;letter-spacing:.06em;color:#264c6e;box-shadow:0 8px 24px rgba(45,85,125,.10);opacity:0;transform:translateY(-6px);transition:opacity .7s ease,transform .7s ease;max-width:290px;line-height:1.65}
+.hint-toast.show{opacity:1;transform:translateY(0)}
+#error{position:absolute;top:44%;left:8%;right:8%;text-align:center;font-size:14px;color:#334}
+@media(max-width:760px){
+  footer{bottom:78px;left:18px;font-size:10.5px}
+  .pager{bottom:16px;left:18px;transform:none;padding:5px 8px;gap:4px}
+  .pager button{padding:5px 8px;font-size:11px}
+  .pager .page-num{min-width:50px;font-size:12px}
+  .controls{bottom:16px;right:18px}
+  .controls button{padding:7px 11px;font-size:11px}
+  .hint-toast{top:auto;bottom:130px;right:18px;left:18px;max-width:none}
+}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="風を綴じる本。白いページをなぞると羽根が浮かび窓へ飛びます。何枚かめくって最初のページに戻ると、重なった穴の奥に窓の青が見えます。"></canvas>
+
+<header>
+  <h1>風を綴じる本</h1>
+  <p>朝の窓辺の切り抜き</p>
+</header>
+
+<div id="toast" class="hint-toast" aria-live="polite"></div>
+
+<nav class="pager" aria-label="ページ操作">
+  <button id="prevBtn" title="前のページへ">◀ 前</button>
+  <span id="pageNum" class="page-num">一 / 五</span>
+  <button id="nextBtn" title="次のページへ">次 ▶</button>
+  <button id="firstBtn" class="first-btn" title="最初のページへ戻る">最初へ</button>
+</nav>
+
+<div class="controls">
+  <button id="soundBtn" aria-pressed="true" title="音の切り替え">音 あり</button>
+</div>
+
+<footer>
+  ページをなぞって羽根を放つ ／ 外側をドラッグして見回す
+  <small>構想　こでじ　×　制作　Gemini</small>
+</footer>
+
+<p id="error" hidden></p>
+
+<script>
+'use strict';
+
+const canvas = document.getElementById('stage');
+const gl = canvas.getContext('webgl', { alpha: false, antialias: true, preserveDrawingBuffer: false });
+
+if (!gl) {
+  const err = document.getElementById('error');
+  err.hidden = false;
+  err.textContent = '3D表示を開始できませんでした。WebGLに対応したブラウザで開いてください。';
+  throw new Error('WebGL unavailable');
+}
+
+// ---------- Math helpers ----------
+const V3 = {
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  scale: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  norm: a => {
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    return [a[0] / l, a[1] / l, a[2] / l];
+  }
+};
+
+function mat4Perspective(fovy, aspect, near, far) {
+  const f = 1.0 / Math.tan(fovy * 0.5);
+  const nf = 1 / (near - far);
+  return new Float32Array([
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (far + near) * nf, -1,
+    0, 0, 2 * far * near * nf, 0
+  ]);
+}
+
+function mat4LookAt(eye, target, up) {
+  const z = V3.norm(V3.sub(eye, target));
+  const x = V3.norm(V3.cross(up, z));
+  const y = V3.cross(z, x);
+  return new Float32Array([
+    x[0], y[0], z[0], 0,
+    x[1], y[1], z[1], 0,
+    x[2], y[2], z[2], 0,
+    -V3.dot(x, eye), -V3.dot(y, eye), -V3.dot(z, eye), 1
+  ]);
+}
+
+function mat4Mul(a, b) {
+  const out = new Float32Array(16);
+  for (let c = 0; c < 4; c++) {
+    for (let r = 0; r < 4; r++) {
+      out[c * 4 + r] =
+        a[0 * 4 + r] * b[c * 4 + 0] +
+        a[1 * 4 + r] * b[c * 4 + 1] +
+        a[2 * 4 + r] * b[c * 4 + 2] +
+        a[3 * 4 + r] * b[c * 4 + 3];
+    }
+  }
+  return out;
+}
+
+function compileProgram(vsSrc, fsSrc) {
+  const p = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, vsSrc], [gl.FRAGMENT_SHADER, fsSrc]]) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(sh) + '\n' + src);
+    }
+    gl.attachShader(p, sh);
+  }
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(p));
+  }
+  return p;
+}
+
+// ---------- Shaders ----------
+// 1. Background: Morning window, sunlit sky, clouds, swaying linen curtains, oak desk
+const bgProg = compileProgram(`
+attribute vec2 aPos;
+void main() {
+  gl_Position = vec4(aPos, 0.999, 1.0);
+}
+`, `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes;
+uniform vec3 uEye, uFwd, uRight, uUp;
+uniform float uTanHalfFov, uTime;
+
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+float fbm(vec2 p) {
+  float v = 0.0, a = 0.5;
+  for (int i = 0; i < 4; i++) {
+    v += a * noise(p);
+    p = p * 2.03 + vec2(13.1, 7.7);
+    a *= 0.5;
+  }
+  return v;
+}
+
+vec3 morningSky(vec3 d) {
+  float h = clamp(d.y * 1.15 + 0.12, 0.0, 1.0);
+  vec3 horizon = vec3(0.93, 0.96, 0.99);
+  vec3 mid = vec3(0.47, 0.73, 0.94);
+  vec3 zenith = vec3(0.18, 0.45, 0.78);
+  vec3 col = mix(horizon, mid, smoothstep(0.0, 0.46, h));
+  col = mix(col, zenith, smoothstep(0.35, 1.0, h));
+
+  // Sun glow from upper-left morning window
+  vec3 sunDir = normalize(vec3(-0.34, 0.42, -0.84));
+  float sunAmt = max(0.0, dot(d, sunDir));
+  col += vec3(1.0, 0.96, 0.86) * (0.28 * pow(sunAmt, 5.0) + 0.55 * pow(sunAmt, 42.0));
+
+  // Soft drifting morning clouds
+  vec2 cuv = d.xz / max(0.14, d.y + 0.24) * 0.55 + vec2(uTime * 0.012, -uTime * 0.004);
+  float c = fbm(cuv * 2.1);
+  float cloud = smoothstep(0.48, 0.82, c) * smoothstep(-0.02, 0.25, d.y);
+  col = mix(col, vec3(0.99, 0.995, 1.0), cloud * 0.52);
+  return col;
+}
+
+void main() {
+  vec2 ndc = (gl_FragCoord.xy / uRes) * 2.0 - 1.0;
+  float aspect = uRes.x / uRes.y;
+  vec3 rd = normalize(uFwd + uRight * (ndc.x * aspect * uTanHalfFov) + uUp * (ndc.y * uTanHalfFov));
+
+  // Intersect desk plane y = -0.18
+  float tDesk = (-0.18 - uEye.y) / rd.y;
+  // Intersect window wall z = -3.8
+  float tWall = (-3.8 - uEye.z) / rd.z;
+
+  vec3 col = morningSky(rd);
+
+  // Window frame and curtains on wall plane z = -3.8
+  if (tWall > 0.0 && (tDesk < 0.0 || tWall < tDesk)) {
+    vec3 wp = uEye + rd * tWall;
+    float inWinX = step(abs(wp.x), 2.55);
+    float inWinY = step(-0.18, wp.y) * step(wp.y, 2.95);
+    float inWindow = inWinX * inWinY;
+
+    // Wall color (warm sunlit plaster)
+    float wallGrad = smoothstep(-0.2, 3.0, wp.y);
+    vec3 wall = mix(vec3(0.86, 0.88, 0.90), vec3(0.94, 0.95, 0.96), wallGrad);
+    wall += vec3(0.04, 0.03, 0.01) * smoothstep(3.2, 1.8, abs(wp.x));
+
+    // White wooden window mullions
+    float frameOuter = (1.0 - step(abs(wp.x), 2.40) * step(-0.05, wp.y) * step(wp.y, 2.82)) * inWindow;
+    float mullionV = (1.0 - smoothstep(0.035, 0.055, abs(wp.x))) * inWindow;
+    float mullionH = (1.0 - smoothstep(0.035, 0.055, abs(wp.y - 1.38))) * inWindow;
+    float frameMask = clamp(frameOuter + mullionV + mullionH, 0.0, 1.0);
+
+    vec3 winCol = col;
+
+    // Soft swaying sheer curtains on left and right edges of window
+    float swayL = 0.09 * sin(uTime * 0.9 + wp.y * 1.4) + 0.04 * sin(uTime * 1.7 + wp.y * 2.8);
+    float swayR = 0.09 * sin(uTime * 0.85 + wp.y * 1.3 + 1.2) + 0.04 * sin(uTime * 1.6 + wp.y * 2.5);
+    float curtEdgeL = -1.65 + swayL + 0.14 * smoothstep(2.8, 0.0, wp.y);
+    float curtEdgeR = 1.65 + swayR - 0.14 * smoothstep(2.8, 0.0, wp.y);
+    float curtL = smoothstep(curtEdgeL + 0.22, curtEdgeL - 0.25, wp.x) * inWindow;
+    float curtR = smoothstep(curtEdgeR - 0.22, curtEdgeR + 0.25, wp.x) * inWindow;
+    float folds = 0.5 + 0.5 * sin(wp.x * 16.0 + swayL * 10.0 + wp.y * 0.8);
+    vec3 curtCol = mix(vec3(0.91, 0.94, 0.97), vec3(1.0, 0.995, 0.985), folds);
+    float curtAlpha = clamp((curtL + curtR) * (0.68 + 0.14 * folds), 0.0, 0.86);
+    winCol = mix(winCol, curtCol, curtAlpha);
+
+    vec3 frameCol = mix(vec3(0.88, 0.90, 0.92), vec3(0.98, 0.985, 0.99), smoothstep(-0.1, 2.5, wp.y));
+    winCol = mix(winCol, frameCol, frameMask);
+
+    // Subtle sunlit bloom around window
+    float glow = exp(-max(0.0, abs(wp.x) - 2.4) * 1.6) * exp(-max(0.0, wp.y - 2.8) * 1.6);
+    wall += vec3(0.07, 0.08, 0.09) * glow;
+
+    col = mix(wall, winCol, inWindow);
+  }
+
+  // Sunlit pale oak desk
+  if (tDesk > 0.0 && rd.y < -0.001) {
+    vec3 dp = uEye + rd * tDesk;
+    float grain = fbm(vec2(dp.x * 1.8, dp.z * 9.5));
+    float fine = noise(vec2(dp.x * 8.0, dp.z * 38.0));
+    vec3 wood = mix(vec3(0.84, 0.81, 0.76), vec3(0.91, 0.88, 0.83), grain * 0.75 + fine * 0.25);
+
+    // Window light patch falling obliquely across the desk
+    float sunX = dp.x - dp.z * 0.22;
+    float sunMask = smoothstep(2.7, 1.8, abs(sunX)) * smoothstep(2.6, -2.5, dp.z);
+    // Soft mullion shadow on desk
+    float mShadX = smoothstep(0.04, 0.16, abs(sunX));
+    float mShadZ = smoothstep(0.05, 0.22, abs(dp.z + 1.35));
+    float sunBeam = sunMask * (0.78 + 0.22 * mShadX * mShadZ);
+
+    // Subtle morning sky bounce on the desk
+    vec3 skyBounce = vec3(0.79, 0.88, 0.96) * 0.14;
+    wood = wood * (0.86 + 0.19 * sunBeam) + skyBounce * (0.4 + 0.6 * sunBeam);
+
+    // Soft ambient shadow directly under the book
+    vec2 bp = dp.xz / vec2(1.58, 1.04);
+    float bookDist = length(max(abs(bp) - vec2(0.86, 0.84), 0.0));
+    float bookAO = 1.0 - 0.34 * exp(-bookDist * 5.2);
+    wood *= bookAO;
+
+    // Gentle distance fog blending into window light
+    float fog = 1.0 - exp(-max(0.0, tDesk - 3.2) * 0.11);
+    col = mix(wood, vec3(0.92, 0.95, 0.98), clamp(fog, 0.0, 0.75));
+  }
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`);
+
+// 2. Book pages shader (with per-page cutout mask, paper texture, edge shadow, and overlap sky reveal)
+const pageProg = compileProgram(`
+attribute vec3 aPos;
+attribute vec3 aNorm;
+attribute vec2 aUv;
+uniform mat4 uVP;
+varying vec3 vWorld;
+varying vec3 vNorm;
+varying vec2 vUv;
+void main() {
+  vWorld = aPos;
+  vNorm = aNorm;
+  vUv = aUv;
+  gl_Position = uVP * vec4(aPos, 1.0);
+}
+`, `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform sampler2D uMask;
+uniform sampler2D uOverlap;
+uniform sampler2D uGuide;
+uniform vec3 uEye;
+uniform float uTime;
+uniform float uIsRight;
+uniform float uLayerIndex;
+uniform float uShowGuide;
+uniform float uRevealSky;
+uniform float uHighlightCut;
+varying vec3 vWorld;
+varying vec3 vNorm;
+varying vec2 vUv;
+
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+
+vec3 portalSky(vec3 viewDir, vec2 uv) {
+  // Parallax morning window sky seen deep through overlapping cutouts
+  vec3 d = normalize(vec3(
+    viewDir.x * 0.85 + (uv.x - 0.5) * 0.45,
+    max(0.08, -viewDir.y * 0.55 + (1.0 - uv.y) * 0.48 + 0.16),
+    -0.85
+  ));
+  float h = clamp(d.y * 1.15, 0.0, 1.0);
+  vec3 horizon = vec3(0.76, 0.90, 0.99);
+  vec3 mid = vec3(0.26, 0.61, 0.92);
+  vec3 zenith = vec3(0.11, 0.36, 0.74);
+  vec3 sky = mix(horizon, mid, smoothstep(0.08, 0.52, h));
+  sky = mix(sky, zenith, smoothstep(0.45, 0.98, h));
+
+  // Drifting luminous morning clouds in the depth
+  vec2 cuv = uv * 2.6 + viewDir.xz * 0.55 + vec2(uTime * 0.025, -uTime * 0.008);
+  float c = 0.55 * noise(cuv * 2.2) + 0.30 * noise(cuv * 4.7 + 3.1) + 0.15 * noise(cuv * 9.3);
+  float cloud = smoothstep(0.52, 0.84, c);
+  sky = mix(sky, vec3(0.98, 0.995, 1.0), cloud * 0.62);
+
+  // Subtle morning sun glint
+  float glint = exp(-length(uv - vec2(0.32, 0.28) - viewDir.xz * 0.12) * 3.8);
+  sky += vec3(0.24, 0.30, 0.34) * glint;
+  return sky;
+}
+
+void main() {
+  float cut = texture2D(uMask, vUv).r;
+  float ovCountInit = texture2D(uOverlap, vUv).r * 4.0;
+  // On the bottom-most sheet (uHighlightCut < 0.5), keep pixels where 2+ cutouts overlap so the sky portal stays open even if all 5 pages are cut.
+  if (cut > 0.52 && !(uRevealSky > 0.5 && uHighlightCut < 0.5 && ovCountInit > 1.45)) discard;
+
+  vec3 N = normalize(vNorm);
+  if (!gl_FrontFacing) N = -N;
+  vec3 V = normalize(uEye - vWorld);
+
+  // Soft morning light from the window (back-left-top)
+  vec3 L = normalize(vec3(-0.42, 0.78, -0.46));
+  float ndl = max(0.0, dot(N, L));
+
+  // Fine Japanese washi-like paper fibers
+  float fiber = noise(vUv * vec2(110.0, 150.0)) * 0.55 + noise(vUv * vec2(260.0, 320.0)) * 0.45;
+  vec3 paper = mix(vec3(0.945, 0.942, 0.930), vec3(0.992, 0.990, 0.982), fiber);
+
+  // Spine crease shadow near u = 0 (right page) or u = 1 (left page)
+  float spineDist = uIsRight > 0.5 ? vUv.x : (1.0 - vUv.x);
+  float spineAO = smoothstep(0.0, 0.14, spineDist);
+  paper *= (0.81 + 0.19 * spineAO);
+
+  // Subtle darkening for deeper layers so depth reads clearly
+  float depthFade = 1.0 - uLayerIndex * 0.032;
+  vec3 col = paper * (0.76 + 0.28 * ndl) * depthFade;
+
+  // Soft blue sky ambient fill from window
+  col += vec3(0.03, 0.055, 0.085) * (0.5 + 0.5 * N.y);
+
+  // Crisp backlit rim along the paper cutout edge
+  float edgeGlow = smoothstep(0.26, 0.51, cut);
+  col = mix(col, vec3(0.76, 0.81, 0.86), edgeGlow * 0.45);
+
+  // Soft shadow cast onto lower layers from upper pages' cutouts
+  vec2 px = vec2(1.0 / 512.0, 1.0 / 640.0);
+  if (uIsRight > 0.5 && uLayerIndex > 0.5) {
+    float upperCut = texture2D(uOverlap, vUv + vec2(0.006, 0.008)).g;
+    float edgeShad = smoothstep(0.1, 0.75, upperCut) * (1.0 - smoothstep(0.55, 0.95, texture2D(uOverlap, vUv).g));
+    col *= (1.0 - 0.14 * edgeShad);
+  }
+
+  // Faint translucent echo of previous pages' cutouts on the current page (gentle invitation)
+  if (uShowGuide > 0.5) {
+    float g0 = texture2D(uGuide, vUv).r;
+    float g1 = texture2D(uGuide, vUv + vec2(px.x * 2.5, 0.0)).r;
+    float g2 = texture2D(uGuide, vUv - vec2(px.x * 2.5, 0.0)).r;
+    float g3 = texture2D(uGuide, vUv + vec2(0.0, px.y * 2.5)).r;
+    float g4 = texture2D(uGuide, vUv - vec2(0.0, px.y * 2.5)).r;
+    float gEdge = clamp(abs(g0 - g1) + abs(g0 - g2) + abs(g0 - g3) + abs(g0 - g4), 0.0, 1.0);
+    col = mix(col, vec3(0.78, 0.89, 0.97), g0 * 0.14 + gEdge * 0.22);
+  }
+
+  // THE MAGIC: When 2+ pages' cutouts overlap, the window's morning blue opens in the depth!
+  if (uRevealSky > 0.5) {
+    // uOverlap.r stores normalized overlap count (count / 4.0)
+    float ovCount = texture2D(uOverlap, vUv).r * 4.0;
+    if (ovCount > 1.45) {
+      float depthStrength = smoothstep(1.45, 2.85, ovCount);
+      vec3 skyCol = portalSky(-V, vUv);
+      // Soft feather at the boundary of the overlapping hole
+      float portalMix = mix(0.68, 0.98, depthStrength);
+      // Add subtle inner vignette for true layered depth
+      float oL = texture2D(uOverlap, vUv + vec2(px.x * 4.0, 0.0)).r * 4.0;
+      float oR = texture2D(uOverlap, vUv - vec2(px.x * 4.0, 0.0)).r * 4.0;
+      float oU = texture2D(uOverlap, vUv + vec2(0.0, px.y * 4.0)).r * 4.0;
+      float oD = texture2D(uOverlap, vUv - vec2(0.0, px.y * 4.0)).r * 4.0;
+      float innerRim = 1.0 - smoothstep(1.3, 2.0, min(min(oL, oR), min(oU, oD)));
+      skyCol *= (1.0 - 0.16 * innerRim);
+      col = mix(col, skyCol, portalMix);
+    }
+  }
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`);
+
+// 3. Solid shaded objects (book cover, page block sides, 3D white feathers)
+const solidProg = compileProgram(`
+attribute vec3 aPos;
+attribute vec3 aNorm;
+attribute float aAlpha;
+uniform mat4 uVP;
+varying vec3 vWorld;
+varying vec3 vNorm;
+varying float vAlpha;
+void main() {
+  vWorld = aPos;
+  vNorm = aNorm;
+  vAlpha = aAlpha;
+  gl_Position = uVP * vec4(aPos, 1.0);
+}
+`, `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec3 uColor;
+uniform vec3 uRimColor;
+uniform float uOpacity;
+uniform float uTranslucency;
+uniform vec3 uEye;
+varying vec3 vWorld;
+varying vec3 vNorm;
+varying float vAlpha;
+void main() {
+  vec3 N = normalize(vNorm);
+  if (!gl_FrontFacing) N = -N;
+  vec3 L = normalize(vec3(-0.42, 0.78, -0.46));
+  vec3 V = normalize(uEye - vWorld);
+  float ndl = max(0.0, dot(N, L));
+  float wrap = max(0.0, dot(N, L) * 0.5 + 0.5);
+  float rim = pow(1.0 - max(0.0, dot(N, V)), 2.4);
+  vec3 col = uColor * (0.70 + 0.34 * mix(ndl, wrap, uTranslucency));
+  col += uRimColor * rim * 0.24;
+  col += vec3(0.04, 0.06, 0.09) * (0.5 + 0.5 * N.y);
+  gl_FragColor = vec4(col, uOpacity * vAlpha);
+}
+`);
+
+// 4. Floating sunlit dust motes / morning wind particles
+const moteProg = compileProgram(`
+attribute vec3 aPos;
+attribute float aSize;
+attribute float aAlpha;
+uniform mat4 uVP;
+uniform float uScale;
+varying float vAlpha;
+void main() {
+  vec4 clip = uVP * vec4(aPos, 1.0);
+  gl_Position = clip;
+  gl_PointSize = clamp(aSize * uScale / max(0.5, clip.w), 1.5, 18.0);
+  vAlpha = aAlpha;
+}
+`, `
+precision mediump float;
+varying float vAlpha;
+void main() {
+  float r = length(gl_PointCoord - 0.5) * 2.0;
+  float a = exp(-r * r * 5.0) * (1.0 - smoothstep(0.7, 1.0, r)) * vAlpha;
+  gl_FragColor = vec4(vec3(0.95, 0.98, 1.0) * a, a);
+}
+`);
+
+// ---------- Book geometry & state ----------
+const PAGE_COUNT = 5;
+const PAGE_W = 1.24;
+const PAGE_H = 1.66;
+const PAGE_THICK = 0.011;
+const MASK_W = 512;
+const MASK_H = 640;
+
+const KANJI_NUMS = ['一', '二', '三', '四', '五'];
+
+let currentPage = 0; // 0..4 (0 = first page on top of right stack)
+let everFlipped = false;
+let skyRevealedOnce = false;
+
+// Page flip animation state
+let flipAnim = null; // { pageIdx, dir: 1 (next) | -1 (prev), t: 0..1 }
+
+// Offscreen 2D canvases for each page's cutout mask
+const pageMasks = [];
+for (let i = 0; i < PAGE_COUNT; i++) {
+  const c = document.createElement('canvas');
+  c.width = MASK_W;
+  c.height = MASK_H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, MASK_W, MASK_H);
+  const tex = createDynamicTexture(c);
+  pageMasks.push({ canvas: c, ctx, tex, cuts: 0 });
+}
+
+// Overlap mask texture (R = count of cutouts from currentPage..4 normalized by 4, G = upper cutouts)
+const overlapCanvas = document.createElement('canvas');
+overlapCanvas.width = MASK_W;
+overlapCanvas.height = MASK_H;
+const overlapCtx = overlapCanvas.getContext('2d');
+const overlapTex = createDynamicTexture(overlapCanvas);
+
+// Guide mask texture (shows faint echo of cutouts from previous pages)
+const guideCanvas = document.createElement('canvas');
+guideCanvas.width = MASK_W;
+guideCanvas.height = MASK_H;
+const guideCtx = guideCanvas.getContext('2d');
+const guideTex = createDynamicTexture(guideCanvas);
+
+function createDynamicTexture(sourceCanvas) {
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceCanvas);
+  return tex;
+}
+
+function uploadTexture(tex, sourceCanvas) {
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceCanvas);
+}
+
+let hasOverlapSky = false;
+
+function rebuildCompositeMasks() {
+  // Compute overlap count across visible right-side stack [currentPage .. PAGE_COUNT-1]
+  const imgData = overlapCtx.createImageData(MASK_W, MASK_H);
+  const out = imgData.data;
+
+  const datas = pageMasks.map(m => m.ctx.getImageData(0, 0, MASK_W, MASK_H).data);
+  let maxOverlap = 0;
+
+  // Guide: union of cutouts on pages before currentPage (so user feels gentle echo when drawing on page 2, 3...)
+  const guideData = guideCtx.createImageData(MASK_W, MASK_H);
+  const gOut = guideData.data;
+
+  const totalPx = MASK_W * MASK_H;
+  for (let i = 0; i < totalPx; i++) {
+    const idx = i * 4;
+    let count = 0;
+    let upper = 0;
+    for (let p = currentPage; p < PAGE_COUNT; p++) {
+      if (datas[p][idx] > 128) {
+        count++;
+        if (p === currentPage) upper = 255;
+      }
+    }
+    if (count > maxOverlap) maxOverlap = count;
+    out[idx] = Math.min(255, Math.round((count / 4) * 255));
+    out[idx + 1] = upper;
+    out[idx + 2] = 0;
+    out[idx + 3] = 255;
+
+    let prevAny = 0;
+    for (let p = 0; p < currentPage; p++) {
+      if (datas[p][idx] > 128) { prevAny = 255; break; }
+    }
+    gOut[idx] = prevAny;
+    gOut[idx + 1] = prevAny;
+    gOut[idx + 2] = prevAny;
+    gOut[idx + 3] = 255;
+  }
+
+  overlapCtx.putImageData(imgData, 0, 0);
+  uploadTexture(overlapTex, overlapCanvas);
+  guideCtx.putImageData(guideData, 0, 0);
+  uploadTexture(guideTex, guideCanvas);
+
+  hasOverlapSky = maxOverlap >= 2;
+  if (hasOverlapSky && currentPage === 0 && !skyRevealedOnce) {
+    skyRevealedOnce = true;
+    playSkyRevealChord();
+    showToast('重なった穴の奥に、朝の窓の青が開きました。');
+  }
+}
+
+// ---------- Book surface height & mesh builders ----------
+function rightPageHeight(u, layerFromTop) {
+  // Natural open book arch: spine at u=0 dips slightly, rises gently, settles toward outer edge u=1
+  const arch = Math.sin(u * Math.PI) * 0.085 * (1.0 - 0.18 * u) + 0.028 * Math.sin(u * Math.PI * 0.5);
+  return 0.04 + arch - layerFromTop * PAGE_THICK;
+}
+
+function leftPageHeight(u, layerFromTop) {
+  // u=0 is outer left edge, u=1 is spine
+  const s = 1.0 - u;
+  const arch = Math.sin(s * Math.PI) * 0.085 * (1.0 - 0.18 * s) + 0.028 * Math.sin(s * Math.PI * 0.5);
+  return 0.04 + arch - layerFromTop * PAGE_THICK;
+}
+
+function pageUvToWorld(u, v, isRight, layerFromTop) {
+  const x = isRight ? u * PAGE_W : -(1.0 - u) * PAGE_W;
+  const z = (v - 0.5) * PAGE_H;
+  const y = isRight ? rightPageHeight(u, layerFromTop) : leftPageHeight(u, layerFromTop);
+  return [x, y, z];
+}
+
+function buildGridIndices(cols, rows) {
+  const idx = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const a = r * (cols + 1) + c;
+      const b = a + 1;
+      const d = a + (cols + 1);
+      const e = d + 1;
+      idx.push(a, d, b, b, d, e);
+    }
+  }
+  return new Uint16Array(idx);
+}
+
+const GRID_C = 28, GRID_R = 24;
+const pageIndices = buildGridIndices(GRID_C, GRID_R);
+const pageIdxBuf = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pageIdxBuf);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, pageIndices, gl.STATIC_DRAW);
+
+const pageVbo = gl.createBuffer();
+const dynamicPageData = new Float32Array((GRID_C + 1) * (GRID_R + 1) * 8);
+
+function fillStaticPageMesh(isRight, layerFromTop) {
+  let ptr = 0;
+  for (let r = 0; r <= GRID_R; r++) {
+    const v = r / GRID_R;
+    for (let c = 0; c <= GRID_C; c++) {
+      const u = c / GRID_C;
+      const p = pageUvToWorld(u, v, isRight, layerFromTop);
+      const du = 0.01;
+      const p2 = pageUvToWorld(Math.min(1, u + du), v, isRight, layerFromTop);
+      const p1 = pageUvToWorld(Math.max(0, u - du), v, isRight, layerFromTop);
+      const tx = p2[0] - p1[0], ty = p2[1] - p1[1];
+      // Normal perpendicular to tangent in XY plane
+      const nx = -ty, ny = tx;
+      const nl = Math.hypot(nx, ny) || 1;
+      dynamicPageData[ptr++] = p[0];
+      dynamicPageData[ptr++] = p[1];
+      dynamicPageData[ptr++] = p[2];
+      dynamicPageData[ptr++] = nx / nl;
+      dynamicPageData[ptr++] = ny / nl;
+      dynamicPageData[ptr++] = 0;
+      dynamicPageData[ptr++] = u;
+      dynamicPageData[ptr++] = v;
+    }
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, pageVbo);
+  gl.bufferData(gl.ARRAY_BUFFER, dynamicPageData, gl.DYNAMIC_DRAW);
+}
+
+function fillFlippingPageMesh(progress, dir) {
+  // dir = 1: turning right->left (angle 0 -> PI); dir = -1: turning left->right (angle PI -> 0)
+  const p = dir === 1 ? progress : (1.0 - progress);
+  const ease = p * p * (3.0 - 2.0 * p);
+  const baseAngle = ease * Math.PI;
+  const curl = Math.sin(ease * Math.PI);
+
+  let ptr = 0;
+  const pts = [];
+  for (let r = 0; r <= GRID_R; r++) {
+    const v = r / GRID_R;
+    for (let c = 0; c <= GRID_C; c++) {
+      const u = c / GRID_C;
+      // Outer edge lags gracefully behind spine for realistic paper flex
+      const lag = curl * 0.44 * Math.pow(u, 1.35) * (dir === 1 ? 1.0 : -1.0);
+      const ang = Math.max(0.0, Math.min(Math.PI, baseAngle - lag));
+      const rad = u * PAGE_W;
+      const x = Math.cos(ang) * rad;
+      const arch = Math.sin(u * Math.PI) * 0.085 * (1.0 - 0.18 * u) * Math.abs(Math.cos(ang));
+      const lift = Math.sin(ang) * rad + curl * 0.12 * Math.sin(u * Math.PI);
+      const y = 0.045 + arch + lift;
+      const z = (v - 0.5) * PAGE_H + curl * 0.02 * (v - 0.5) * u;
+      pts.push([x, y, z, u, v]);
+    }
+  }
+  for (let r = 0; r <= GRID_R; r++) {
+    for (let c = 0; c <= GRID_C; c++) {
+      const idx = r * (GRID_C + 1) + c;
+      const cur = pts[idx];
+      const left = pts[r * (GRID_C + 1) + Math.max(0, c - 1)];
+      const right = pts[r * (GRID_C + 1) + Math.min(GRID_C, c + 1)];
+      const up = pts[Math.max(0, r - 1) * (GRID_C + 1) + c];
+      const dn = pts[Math.min(GRID_R, r + 1) * (GRID_C + 1) + c];
+      const tu = [right[0] - left[0], right[1] - left[1], right[2] - left[2]];
+      const tv = [dn[0] - up[0], dn[1] - up[1], dn[2] - up[2]];
+      const n = V3.norm(V3.cross(tv, tu));
+      dynamicPageData[ptr++] = cur[0];
+      dynamicPageData[ptr++] = cur[1];
+      dynamicPageData[ptr++] = cur[2];
+      dynamicPageData[ptr++] = n[0];
+      dynamicPageData[ptr++] = n[1];
+      dynamicPageData[ptr++] = n[2];
+      dynamicPageData[ptr++] = cur[3];
+      dynamicPageData[ptr++] = cur[4];
+    }
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, pageVbo);
+  gl.bufferData(gl.ARRAY_BUFFER, dynamicPageData, gl.DYNAMIC_DRAW);
+}
+
+// Book cover & block geometry (static)
+function buildBoxMesh(cx, cy, cz, sx, sy, sz) {
+  const hx = sx / 2, hy = sy / 2, hz = sz / 2;
+  const faces = [
+    { n: [0, 1, 0], v: [[-hx, hy, -hz], [-hx, hy, hz], [hx, hy, hz], [hx, hy, -hz]] },
+    { n: [0, -1, 0], v: [[-hx, -hy, hz], [-hx, -hy, -hz], [hx, -hy, -hz], [hx, -hy, hz]] },
+    { n: [0, 0, 1], v: [[-hx, -hy, hz], [hx, -hy, hz], [hx, hy, hz], [-hx, hy, hz]] },
+    { n: [0, 0, -1], v: [[hx, -hy, -hz], [-hx, -hy, -hz], [-hx, hy, -hz], [hx, hy, -hz]] },
+    { n: [1, 0, 0], v: [[hx, -hy, hz], [hx, -hy, -hz], [hx, hy, -hz], [hx, hy, hz]] },
+    { n: [-1, 0, 0], v: [[-hx, -hy, -hz], [-hx, -hy, hz], [-hx, hy, hz], [-hx, hy, -hz]] }
+  ];
+  const verts = [];
+  for (const f of faces) {
+    const q = f.v.map(p => [p[0] + cx, p[1] + cy, p[2] + cz]);
+    for (const i of [0, 1, 2, 0, 2, 3]) {
+      verts.push(q[i][0], q[i][1], q[i][2], f.n[0], f.n[1], f.n[2], 1.0);
+    }
+  }
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+  return { buf, count: verts.length / 7 };
+}
+
+const coverLeft = buildBoxMesh(-PAGE_W * 0.52, -0.14, 0, PAGE_W * 1.07, 0.045, PAGE_H * 1.055);
+const coverRight = buildBoxMesh(PAGE_W * 0.52, -0.14, 0, PAGE_W * 1.07, 0.045, PAGE_H * 1.055);
+const coverSpine = buildBoxMesh(0, -0.148, 0, 0.14, 0.052, PAGE_H * 1.06);
+const pageBlockL = buildBoxMesh(-PAGE_W * 0.5, -0.065, 0, PAGE_W * 0.995, 0.11, PAGE_H * 0.992);
+const pageBlockR = buildBoxMesh(PAGE_W * 0.5, -0.065, 0, PAGE_W * 0.995, 0.11, PAGE_H * 0.992);
+
+// Fullscreen quad for background
+const bgBuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+// Dynamic buffer for feathers (active curled feather + flying feathers)
+const featherBuf = gl.createBuffer();
+
+// ---------- Feather geometry & physics ----------
+function featherHalfWidth(t, side) {
+  // Organic bird feather silhouette along t in [0, 1]
+  // Slight asymmetry between left/right vanes + gentle natural barb notch
+  const base = Math.sin(Math.pow(t, 0.72) * Math.PI);
+  const fullness = side > 0 ? 1.08 : 0.88;
+  const notch = 1.0 - 0.18 * Math.exp(-Math.pow((t - 0.64) / 0.032, 2)) * (side > 0 ? 1.0 : 0.4);
+  const notch2 = 1.0 - 0.12 * Math.exp(-Math.pow((t - 0.36) / 0.025, 2)) * (side > 0 ? 0.3 : 1.0);
+  return base * fullness * notch * notch2;
+}
+
+function resampleStroke(rawPts, samples) {
+  if (rawPts.length < 2) return null;
+  const dists = [0];
+  let total = 0;
+  for (let i = 1; i < rawPts.length; i++) {
+    total += Math.hypot(rawPts[i][0] - rawPts[i - 1][0], rawPts[i][1] - rawPts[i - 1][1]);
+    dists.push(total);
+  }
+  if (total < 0.055) return null;
+  const out = [];
+  for (let s = 0; s <= samples; s++) {
+    const target = (s / samples) * total;
+    let j = 0;
+    while (j < dists.length - 2 && dists[j + 1] < target) j++;
+    const seg = dists[j + 1] - dists[j] || 1e-6;
+    const f = (target - dists[j]) / seg;
+    out.push([
+      rawPts[j][0] + (rawPts[j + 1][0] - rawPts[j][0]) * f,
+      rawPts[j][1] + (rawPts[j + 1][1] - rawPts[j][1]) * f
+    ]);
+  }
+  // Gentle smoothing pass to preserve user's graceful curve without jitter
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 1; i < out.length - 1; i++) {
+      out[i][0] = out[i - 1][0] * 0.22 + out[i][0] * 0.56 + out[i + 1][0] * 0.22;
+      out[i][1] = out[i - 1][1] * 0.22 + out[i][1] * 0.56 + out[i + 1][1] * 0.22;
+    }
+  }
+  return { pts: out, length: total };
+}
+
+function buildFeatherMeshData(spineUv, lengthUv, curlAmount, liftOffset, tiltVec, spinAngle, fadeAlpha) {
+  const N = spineUv.length;
+  const maxW = Math.min(0.115, Math.max(0.048, lengthUv * 0.24));
+
+  // Center of feather in world space (for flying rotation)
+  const midUv = spineUv[Math.floor(N / 2)];
+  const centerW = pageUvToWorld(midUv[0], midUv[1], true, 0);
+
+  const leftRow = [];
+  const midRow = [];
+  const rightRow = [];
+
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const p = spineUv[i];
+    const pPrev = spineUv[Math.max(0, i - 1)];
+    const pNext = spineUv[Math.min(N - 1, i + 1)];
+    let tx = pNext[0] - pPrev[0];
+    let ty = pNext[1] - pPrev[1];
+    const tl = Math.hypot(tx, ty) || 1;
+    tx /= tl; ty /= tl;
+    // Perpendicular in UV space
+    const nx = -ty, ny = tx;
+
+    const wL = maxW * featherHalfWidth(t, -1);
+    const wR = maxW * featherHalfWidth(t, 1);
+
+    const uvL = [p[0] - nx * wL, p[1] - ny * wL];
+    const uvM = [p[0], p[1]];
+    const uvR = [p[0] + nx * wR, p[1] + ny * wR];
+
+    const wPosL = pageUvToWorld(uvL[0], uvL[1], true, 0);
+    const wPosM = pageUvToWorld(uvM[0], uvM[1], true, 0);
+    const wPosR = pageUvToWorld(uvR[0], uvR[1], true, 0);
+
+    // THE SIGNATURE GESTURE:
+    // Only ONE side (right vane) curls gracefully up off the paper while tracing!
+    const sideCurl = curlAmount * (0.04 + 0.14 * Math.sin(t * Math.PI));
+    const spineLift = curlAmount * 0.025 * Math.sin(t * Math.PI);
+
+    wPosL[1] += 0.004;
+    wPosM[1] += 0.006 + spineLift;
+    wPosR[1] += 0.006 + sideCurl;
+    // Slight inward pull as the paper vane curls upward
+    wPosR[0] += (wPosM[0] - wPosR[0]) * 0.18 * curlAmount;
+    wPosR[2] += (wPosM[2] - wPosR[2]) * 0.18 * curlAmount;
+
+    const transform = (pt) => {
+      if (!liftOffset) return pt;
+      let rx = pt[0] - centerW[0];
+      let ry = pt[1] - centerW[1];
+      let rz = pt[2] - centerW[2];
+      // Gentle yaw & roll while gliding toward the morning window
+      const ca = Math.cos(spinAngle), sa = Math.sin(spinAngle);
+      const x1 = rx * ca - rz * sa;
+      const z1 = rx * sa + rz * ca;
+      const cb = Math.cos(tiltVec[0]), sb = Math.sin(tiltVec[0]);
+      const y2 = ry * cb - z1 * sb;
+      const z2 = ry * sb + z1 * cb;
+      const cc = Math.cos(tiltVec[1]), sc = Math.sin(tiltVec[1]);
+      const x3 = x1 * cc - y2 * sc;
+      const y3 = x1 * sc + y2 * cc;
+      return [
+        centerW[0] + x3 + liftOffset[0],
+        centerW[1] + y3 + liftOffset[1],
+        centerW[2] + z2 + liftOffset[2]
+      ];
+    };
+
+    leftRow.push(transform(wPosL));
+    midRow.push(transform(wPosM));
+    rightRow.push(transform(wPosR));
+  }
+
+  const verts = [];
+  function pushTri(a, b, c) {
+    const n = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+    verts.push(
+      a[0], a[1], a[2], n[0], n[1], n[2], fadeAlpha,
+      b[0], b[1], b[2], n[0], n[1], n[2], fadeAlpha,
+      c[0], c[1], c[2], n[0], n[1], n[2], fadeAlpha
+    );
+  }
+
+  for (let i = 0; i < N - 1; i++) {
+    // Left vane strip
+    pushTri(leftRow[i], midRow[i], midRow[i + 1]);
+    pushTri(leftRow[i], midRow[i + 1], leftRow[i + 1]);
+    // Right vane strip (the raised curl)
+    pushTri(midRow[i], rightRow[i], rightRow[i + 1]);
+    pushTri(midRow[i], rightRow[i + 1], midRow[i + 1]);
+  }
+  return new Float32Array(verts);
+}
+
+function stampFeatherCutout(pageIdx, spineUv, lengthUv) {
+  const m = pageMasks[pageIdx];
+  const ctx = m.ctx;
+  const N = spineUv.length;
+  const maxW = Math.min(0.115, Math.max(0.048, lengthUv * 0.24));
+
+  const leftPts = [];
+  const rightPts = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const p = spineUv[i];
+    const pPrev = spineUv[Math.max(0, i - 1)];
+    const pNext = spineUv[Math.min(N - 1, i + 1)];
+    let tx = pNext[0] - pPrev[0], ty = pNext[1] - pPrev[1];
+    const tl = Math.hypot(tx, ty) || 1;
+    tx /= tl; ty /= tl;
+    const nx = -ty, ny = tx;
+    const wL = maxW * featherHalfWidth(t, -1);
+    const wR = maxW * featherHalfWidth(t, 1);
+    leftPts.push([(p[0] - nx * wL) * MASK_W, (p[1] - ny * wL) * MASK_H]);
+    rightPts.push([(p[0] + nx * wR) * MASK_W, (p[1] + ny * wR) * MASK_H]);
+  }
+
+  ctx.save();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(leftPts[0][0], leftPts[0][1]);
+  for (let i = 1; i < leftPts.length; i++) ctx.lineTo(leftPts[i][0], leftPts[i][1]);
+  for (let i = rightPts.length - 1; i >= 0; i--) ctx.lineTo(rightPts[i][0], rightPts[i][1]);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  m.cuts++;
+  uploadTexture(m.tex, m.canvas);
+  rebuildCompositeMasks();
+}
+
+const flyingFeathers = [];
+
+// Floating morning dust motes
+const MOTE_COUNT = 54;
+const motes = [];
+for (let i = 0; i < MOTE_COUNT; i++) {
+  motes.push({
+    x: (Math.random() - 0.5) * 4.4,
+    y: 0.05 + Math.random() * 2.1,
+    z: -3.2 + Math.random() * 4.6,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.25 + Math.random() * 0.45,
+    size: 2.5 + Math.random() * 5.0
+  });
+}
+const moteBuf = gl.createBuffer();
+const moteData = new Float32Array(MOTE_COUNT * 5);
+
+// ---------- Camera & Raycasting ----------
+let camYaw = 0.06;
+let camPitch = 0.72; // Looking gently down at the book with window visible behind
+let camDist = 3.25;
+let targetYaw = camYaw;
+let targetPitch = camPitch;
+
+let eye = [0, 2, 2.5];
+let fwd = [0, -0.5, -0.8];
+let rightVec = [1, 0, 0];
+let upVec = [0, 1, 0];
+let vpMat = new Float32Array(16);
+const FOVY = 44 * Math.PI / 180;
+const TAN_HALF_FOV = Math.tan(FOVY * 0.5);
+
+function updateCamera() {
+  camYaw += (targetYaw - camYaw) * 0.14;
+  camPitch += (targetPitch - camPitch) * 0.14;
+  const target = [0.08, 0.14, -0.08];
+  eye = [
+    target[0] + Math.sin(camYaw) * Math.cos(camPitch) * camDist,
+    target[1] + Math.sin(camPitch) * camDist,
+    target[2] + Math.cos(camYaw) * Math.cos(camPitch) * camDist
+  ];
+  fwd = V3.norm(V3.sub(target, eye));
+  rightVec = V3.norm(V3.cross(fwd, [0, 1, 0]));
+  upVec = V3.cross(rightVec, fwd);
+  const aspect = canvas.width / Math.max(1, canvas.height);
+  const proj = mat4Perspective(FOVY, aspect, 0.08, 40.0);
+  const view = mat4LookAt(eye, target, [0, 1, 0]);
+  vpMat = mat4Mul(proj, view);
+}
+
+function screenToRay(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((clientX - rect.left) / rect.width) * 2.0 - 1.0;
+  const ny = 1.0 - ((clientY - rect.top) / rect.height) * 2.0;
+  const aspect = rect.width / Math.max(1, rect.height);
+  return V3.norm(
+    V3.add(
+      fwd,
+      V3.add(
+        V3.scale(rightVec, nx * aspect * TAN_HALF_FOV),
+        V3.scale(upVec, ny * TAN_HALF_FOV)
+      )
+    )
+  );
+}
+
+function raycastRightPage(clientX, clientY) {
+  const rd = screenToRay(clientX, clientY);
+  if (rd[1] >= -0.01) return null;
+  // Iterative intersection with curved right page surface
+  let yEst = 0.11;
+  let u = 0, v = 0;
+  for (let k = 0; k < 3; k++) {
+    const t = (yEst - eye[1]) / rd[1];
+    if (t <= 0) return null;
+    const px = eye[0] + rd[0] * t;
+    const pz = eye[2] + rd[2] * t;
+    u = px / PAGE_W;
+    v = pz / PAGE_H + 0.5;
+    yEst = rightPageHeight(Math.max(0, Math.min(1, u)), 0);
+  }
+  if (u >= 0.05 && u <= 0.96 && v >= 0.04 && v <= 0.96) {
+    return [u, v];
+  }
+  return null;
+}
+
+// ---------- Web Audio API (Paper whisper, feather wind chime, page turn) ----------
+let audioCtx = null;
+let soundEnabled = true;
+let noiseBuffer = null;
+
+function ensureAudio() {
+  if (!soundEnabled) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) {
+    audioCtx = new AC();
+    const len = audioCtx.sampleRate * 1.5;
+    noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const white = Math.random() * 2 - 1;
+      last = (last + 0.04 * white) / 1.04;
+      data[i] = last * 3.2;
+    }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+}
+
+let lastTraceSound = 0;
+function playPaperTrace(speed) {
+  if (!soundEnabled || !audioCtx || audioCtx.state !== 'running' || !noiseBuffer) return;
+  const now = audioCtx.currentTime;
+  if (now - lastTraceSound < 0.07) return;
+  lastTraceSound = now;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = noiseBuffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 1400 + Math.min(1800, speed * 900);
+  filter.Q.value = 2.4;
+
+  const gain = audioCtx.createGain();
+  const vol = Math.min(0.055, 0.014 + speed * 0.03);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(vol, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start(now, Math.random() * 0.8, 0.12);
+}
+
+function playFeatherRelease(u) {
+  if (!soundEnabled || !audioCtx || audioCtx.state !== 'running') return;
+  const now = audioCtx.currentTime;
+  const notes = [587.33, 659.25, 739.99, 880.0, 987.77, 1174.66]; // D major / morning pentatonic
+  const base = notes[Math.min(notes.length - 1, Math.floor(u * notes.length))];
+  for (const [mult, vol, dur] of [[1, 0.038, 1.8], [2, 0.012, 1.1], [3, 0.004, 0.6]]) {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(base * mult, now);
+    osc.frequency.exponentialRampToValueAtTime(base * mult * 1.006, now + dur);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(vol, now + 0.025);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + dur + 0.02);
+  }
+}
+
+function playPageTurn() {
+  if (!soundEnabled || !audioCtx || audioCtx.state !== 'running' || !noiseBuffer) return;
+  const now = audioCtx.currentTime;
+  const src = audioCtx.createBufferSource();
+  src.buffer = noiseBuffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(620, now);
+  filter.frequency.exponentialRampToValueAtTime(1650, now + 0.18);
+  filter.frequency.exponentialRampToValueAtTime(480, now + 0.36);
+  filter.Q.value = 1.2;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.linearRampToValueAtTime(0.09, now + 0.09);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+  src.connect(filter);
+  filter.connect(g);
+  g.connect(audioCtx.destination);
+  src.start(now, Math.random() * 0.5, 0.4);
+}
+
+function playSkyRevealChord() {
+  if (!soundEnabled || !audioCtx || audioCtx.state !== 'running') return;
+  const now = audioCtx.currentTime;
+  [587.33, 880.0, 1108.73, 1479.98].forEach((freq, i) => {
+    const t = now + i * 0.09;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.026, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.8);
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 2.9);
+  });
+}
+
+// ---------- UI & Page controls ----------
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const firstBtn = document.getElementById('firstBtn');
+const pageNumEl = document.getElementById('pageNum');
+const soundBtn = document.getElementById('soundBtn');
+const toastEl = document.getElementById('toast');
+
+let toastTimer = null;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 4600);
+}
+
+function updatePagerUI() {
+  pageNumEl.textContent = `${KANJI_NUMS[currentPage]} / 五`;
+  prevBtn.disabled = currentPage === 0 || !!flipAnim;
+  nextBtn.disabled = currentPage === PAGE_COUNT - 1 || !!flipAnim;
+  firstBtn.disabled = currentPage === 0 || !!flipAnim;
+
+  const totalPagesWithCuts = pageMasks.filter(m => m.cuts > 0).length;
+  if (currentPage > 0 && totalPagesWithCuts >= 2 && !skyRevealedOnce) {
+    firstBtn.classList.add('pulse');
+  } else {
+    firstBtn.classList.remove('pulse');
+  }
+}
+
+function turnTo(nextIdx) {
+  if (flipAnim || nextIdx < 0 || nextIdx >= PAGE_COUNT || nextIdx === currentPage) return;
+  ensureAudio();
+  playPageTurn();
+  const dir = nextIdx > currentPage ? 1 : -1;
+  const pageIdx = dir === 1 ? currentPage : nextIdx;
+  if (dir === 1) everFlipped = true;
+  flipAnim = { pageIdx, targetPage: nextIdx, dir, t: 0 };
+  updatePagerUI();
+}
+
+prevBtn.onclick = () => turnTo(currentPage - 1);
+nextBtn.onclick = () => turnTo(currentPage + 1);
+firstBtn.onclick = () => {
+  if (currentPage === 0 || flipAnim) return;
+  ensureAudio();
+  playPageTurn();
+  flipAnim = { pageIdx: 0, targetPage: 0, dir: -1, t: 0 };
+  updatePagerUI();
+};
+
+soundBtn.onclick = () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.setAttribute('aria-pressed', String(soundEnabled));
+  soundBtn.textContent = soundEnabled ? '音 あり' : '音 なし';
+  if (soundEnabled) ensureAudio();
+  else if (audioCtx) audioCtx.suspend().catch(() => {});
+};
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') turnTo(currentPage + 1);
+  if (e.key === 'ArrowLeft') turnTo(currentPage - 1);
+  if (e.key === 'Home') firstBtn.click();
+});
+
+// ---------- Pointer Interaction ----------
+let pointerState = null; // { id, mode: 'trace'|'orbit', pts: [[u,v]...], lastX, lastY }
+let activeFeatherPreview = null; // { spineUv, lengthUv }
+
+canvas.addEventListener('pointerdown', e => {
+  if (pointerState || e.button !== 0 || flipAnim) return;
+  ensureAudio();
+  canvas.setPointerCapture(e.pointerId);
+  const hit = raycastRightPage(e.clientX, e.clientY);
+  if (hit) {
+    pointerState = { id: e.pointerId, mode: 'trace', pts: [hit], lastX: e.clientX, lastY: e.clientY };
+    activeFeatherPreview = null;
+  } else {
+    pointerState = { id: e.pointerId, mode: 'orbit', lastX: e.clientX, lastY: e.clientY };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!pointerState || e.pointerId !== pointerState.id) return;
+  if (pointerState.mode === 'orbit') {
+    const dx = e.clientX - pointerState.lastX;
+    const dy = e.clientY - pointerState.lastY;
+    targetYaw = Math.max(-0.85, Math.min(0.85, targetYaw - dx * 0.0055));
+    targetPitch = Math.max(0.28, Math.min(1.18, targetPitch + dy * 0.0045));
+    pointerState.lastX = e.clientX;
+    pointerState.lastY = e.clientY;
+  } else if (pointerState.mode === 'trace') {
+    const hit = raycastRightPage(e.clientX, e.clientY);
+    if (hit) {
+      const prev = pointerState.pts[pointerState.pts.length - 1];
+      const d = Math.hypot(hit[0] - prev[0], hit[1] - prev[1]);
+      if (d > 0.012) {
+        pointerState.pts.push(hit);
+        const res = resampleStroke(pointerState.pts, 26);
+        if (res) {
+          activeFeatherPreview = res;
+          playPaperTrace(d * 20);
+        }
+      }
+    }
+  }
+});
+
+function endPointer(e) {
+  if (!pointerState || e.pointerId !== pointerState.id) return;
+  if (pointerState.mode === 'trace' && activeFeatherPreview) {
+    const { pts, length } = activeFeatherPreview;
+    stampFeatherCutout(currentPage, pts, length);
+    const mid = pts[Math.floor(pts.length / 2)];
+    playFeatherRelease(mid[0]);
+
+    flyingFeathers.push({
+      spineUv: pts,
+      lengthUv: length,
+      age: 0,
+      dur: 4.8 + Math.random() * 1.4,
+      driftX: (Math.random() - 0.5) * 0.85 - 0.15,
+      driftY: 1.05 + Math.random() * 0.55,
+      driftZ: -3.4 - Math.random() * 1.1,
+      swayFreq: 1.8 + Math.random() * 1.2,
+      swayAmp: 0.16 + Math.random() * 0.12,
+      spinRate: (Math.random() - 0.5) * 1.1,
+      phase: Math.random() * Math.PI * 2
+    });
+
+    const cutPages = pageMasks.filter(m => m.cuts > 0).length;
+    if (currentPage === 0 && pageMasks[0].cuts === 1 && !everFlipped) {
+      showToast('羽根が窓へ飛び立ちました。次のページをめくってみましょう。');
+    } else if (currentPage > 0 && cutPages >= 2 && !skyRevealedOnce) {
+      showToast('「最初へ」で最初のページに戻ると、重なった穴の奥が見えます。');
+    }
+    updatePagerUI();
+  }
+  activeFeatherPreview = null;
+  pointerState = null;
+  canvas.style.cursor = 'crosshair';
+}
+
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+
+// ---------- Resize ----------
+let dpr = 1;
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+  canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+  gl.viewport(0, 0, canvas.width, canvas.height);
+}
+new ResizeObserver(resize).observe(canvas);
+resize();
+
+// ---------- Uniform location caches ----------
+function getLocs(prog, list) {
+  const o = {};
+  for (const name of list) o[name] = gl.getUniformLocation(prog, name);
+  return o;
+}
+const bgU = getLocs(bgProg, ['uRes', 'uEye', 'uFwd', 'uRight', 'uUp', 'uTanHalfFov', 'uTime']);
+const pageU = getLocs(pageProg, ['uVP', 'uMask', 'uOverlap', 'uGuide', 'uEye', 'uTime', 'uIsRight', 'uLayerIndex', 'uShowGuide', 'uRevealSky', 'uHighlightCut']);
+const solidU = getLocs(solidProg, ['uVP', 'uColor', 'uRimColor', 'uOpacity', 'uTranslucency', 'uEye']);
+const moteU = getLocs(moteProg, ['uVP', 'uScale']);
+
+const bgPosLoc = gl.getAttribLocation(bgProg, 'aPos');
+const pgPosLoc = gl.getAttribLocation(pageProg, 'aPos');
+const pgNormLoc = gl.getAttribLocation(pageProg, 'aNorm');
+const pgUvLoc = gl.getAttribLocation(pageProg, 'aUv');
+const solPosLoc = gl.getAttribLocation(solidProg, 'aPos');
+const solNormLoc = gl.getAttribLocation(solidProg, 'aNorm');
+const solAlphaLoc = gl.getAttribLocation(solidProg, 'aAlpha');
+const motPosLoc = gl.getAttribLocation(moteProg, 'aPos');
+const motSizeLoc = gl.getAttribLocation(moteProg, 'aSize');
+const motAlphaLoc = gl.getAttribLocation(moteProg, 'aAlpha');
+
+function drawSolid(mesh, color, rimColor, opacity, translucency) {
+  gl.useProgram(solidProg);
+  gl.uniformMatrix4fv(solidU.uVP, false, vpMat);
+  gl.uniform3fv(solidU.uColor, color);
+  gl.uniform3fv(solidU.uRimColor, rimColor);
+  gl.uniform1f(solidU.uOpacity, opacity);
+  gl.uniform1f(solidU.uTranslucency, translucency);
+  gl.uniform3fv(solidU.uEye, eye);
+  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buf);
+  gl.enableVertexAttribArray(solPosLoc);
+  gl.enableVertexAttribArray(solNormLoc);
+  gl.enableVertexAttribArray(solAlphaLoc);
+  gl.vertexAttribPointer(solPosLoc, 3, gl.FLOAT, false, 28, 0);
+  gl.vertexAttribPointer(solNormLoc, 3, gl.FLOAT, false, 28, 12);
+  gl.vertexAttribPointer(solAlphaLoc, 1, gl.FLOAT, false, 28, 24);
+  gl.drawArrays(gl.TRIANGLES, 0, mesh.count);
+  gl.disableVertexAttribArray(solPosLoc);
+  gl.disableVertexAttribArray(solNormLoc);
+  gl.disableVertexAttribArray(solAlphaLoc);
+}
+
+function drawPage(maskTex, isRight, layerIdx, showGuide, revealSky, t, isBottom = false) {
+  gl.useProgram(pageProg);
+  gl.uniformMatrix4fv(pageU.uVP, false, vpMat);
+  gl.uniform3fv(pageU.uEye, eye);
+  gl.uniform1f(pageU.uTime, t);
+  gl.uniform1f(pageU.uIsRight, isRight ? 1.0 : 0.0);
+  gl.uniform1f(pageU.uLayerIndex, layerIdx);
+  gl.uniform1f(pageU.uShowGuide, showGuide ? 1.0 : 0.0);
+  gl.uniform1f(pageU.uRevealSky, revealSky ? 1.0 : 0.0);
+  gl.uniform1f(pageU.uHighlightCut, isBottom ? 0.0 : 1.0);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, maskTex);
+  gl.uniform1i(pageU.uMask, 0);
+
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, overlapTex);
+  gl.uniform1i(pageU.uOverlap, 1);
+
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, guideTex);
+  gl.uniform1i(pageU.uGuide, 2);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, pageVbo);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pageIdxBuf);
+  gl.enableVertexAttribArray(pgPosLoc);
+  gl.enableVertexAttribArray(pgNormLoc);
+  gl.enableVertexAttribArray(pgUvLoc);
+  gl.vertexAttribPointer(pgPosLoc, 3, gl.FLOAT, false, 32, 0);
+  gl.vertexAttribPointer(pgNormLoc, 3, gl.FLOAT, false, 32, 12);
+  gl.vertexAttribPointer(pgUvLoc, 2, gl.FLOAT, false, 32, 24);
+  gl.drawElements(gl.TRIANGLES, pageIndices.length, gl.UNSIGNED_SHORT, 0);
+  gl.disableVertexAttribArray(pgPosLoc);
+  gl.disableVertexAttribArray(pgNormLoc);
+  gl.disableVertexAttribArray(pgUvLoc);
+}
+
+// ---------- Main render loop ----------
+rebuildCompositeMasks();
+updatePagerUI();
+showToast('白いページをなぞって、最初の羽根を窓へ放ってみましょう。');
+
+let lastTime = performance.now() / 1000;
+const startTime = lastTime;
+
+function frame() {
+  const now = performance.now() / 1000;
+  const dt = Math.min(0.05, Math.max(0.001, now - lastTime));
+  lastTime = now;
+  const t = now - startTime;
+
+  updateCamera();
+
+  // Advance page flip animation
+  if (flipAnim) {
+    flipAnim.t += dt * 1.45;
+    if (flipAnim.t >= 1.0) {
+      currentPage = flipAnim.targetPage;
+      flipAnim = null;
+      rebuildCompositeMasks();
+      updatePagerUI();
+    }
+  }
+
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // 1. Background morning window & oak desk
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.useProgram(bgProg);
+  gl.uniform2f(bgU.uRes, canvas.width, canvas.height);
+  gl.uniform3fv(bgU.uEye, eye);
+  gl.uniform3fv(bgU.uFwd, fwd);
+  gl.uniform3fv(bgU.uRight, rightVec);
+  gl.uniform3fv(bgU.uUp, upVec);
+  gl.uniform1f(bgU.uTanHalfFov, TAN_HALF_FOV);
+  gl.uniform1f(bgU.uTime, t);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf);
+  gl.enableVertexAttribArray(bgPosLoc);
+  gl.vertexAttribPointer(bgPosLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.disableVertexAttribArray(bgPosLoc);
+
+  // 2. Book cover & page blocks
+  gl.enable(gl.DEPTH_TEST);
+  const coverCol = [0.85, 0.87, 0.89];
+  const blockCol = [0.91, 0.90, 0.88];
+  drawSolid(coverLeft, coverCol, [1, 1, 1], 1.0, 0.2);
+  drawSolid(coverRight, coverCol, [1, 1, 1], 1.0, 0.2);
+  drawSolid(coverSpine, [0.78, 0.81, 0.84], [1, 1, 1], 1.0, 0.2);
+  drawSolid(pageBlockL, blockCol, [1, 1, 1], 1.0, 0.3);
+  drawSolid(pageBlockR, blockCol, [1, 1, 1], 1.0, 0.3);
+
+  // 3. Left-side stack (already turned pages)
+  const leftTopIdx = flipAnim && flipAnim.dir === -1 ? Math.max(-1, flipAnim.targetPage - 1) : currentPage - 1;
+  if (leftTopIdx >= 0) {
+    const layers = Math.min(3, leftTopIdx + 1);
+    for (let k = layers - 1; k >= 0; k--) {
+      const pIdx = leftTopIdx - k;
+      fillStaticPageMesh(false, k);
+      drawPage(pageMasks[pIdx].tex, false, k, false, false, t);
+    }
+  } else {
+    // Blank inner front endpaper on the left when on page 1
+    fillStaticPageMesh(false, 0);
+    // Use an empty mask (temporarily use guideTex when empty, or draw plain sheet via pageMasks? Better: blank solid-like page)
+    // Draw clean white left flyleaf using a blank mask? Create once below if needed — let's use blankTex!
+    drawPage(blankTex, false, 0, false, false, t);
+  }
+
+  // 4. Right-side stack (layered pages so cutouts reveal deeper sheets & morning window blue!)
+  const rightStart = flipAnim && flipAnim.dir === 1 ? currentPage + 1 : currentPage;
+  // Draw from bottom-most layer up to top-most layer
+  for (let p = PAGE_COUNT - 1; p >= rightStart; p--) {
+    const layerFromTop = p - rightStart;
+    fillStaticPageMesh(true, layerFromTop);
+    const isTop = (p === rightStart && !flipAnim);
+    // Reveal the window's morning blue on the deeper layers wherever 2+ cutouts overlap!
+    const revealSky = (layerFromTop >= 1) || (p === PAGE_COUNT - 1);
+    drawPage(pageMasks[p].tex, true, layerFromTop, isTop && currentPage > 0, revealSky, t, p === PAGE_COUNT - 1);
+  }
+
+  // 5. Currently flipping page
+  if (flipAnim) {
+    fillFlippingPageMesh(flipAnim.t, flipAnim.dir);
+    drawPage(pageMasks[flipAnim.pageIdx].tex, true, 0, false, false, t);
+  }
+
+  // 6. Active curling feather while user traces on the page
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  if (activeFeatherPreview) {
+    const meshData = buildFeatherMeshData(
+      activeFeatherPreview.pts,
+      activeFeatherPreview.length,
+      1.0,
+      null,
+      [0, 0],
+      0,
+      1.0
+    );
+    gl.bindBuffer(gl.ARRAY_BUFFER, featherBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, meshData, gl.DYNAMIC_DRAW);
+    drawSolid(
+      { buf: featherBuf, count: meshData.length / 7 },
+      [0.995, 0.996, 1.0],
+      [0.75, 0.90, 1.0],
+      0.98,
+      0.75
+    );
+  }
+
+  // 7. Flying feathers drifting gracefully toward the morning window
+  for (let i = flyingFeathers.length - 1; i >= 0; i--) {
+    const f = flyingFeathers[i];
+    f.age += dt;
+    if (f.age >= f.dur) {
+      flyingFeathers.splice(i, 1);
+      continue;
+    }
+    const p = f.age / f.dur;
+    const easeOut = 1.0 - Math.pow(1.0 - p, 2.2);
+    const sway = Math.sin(f.age * f.swayFreq + f.phase) * f.swayAmp * (0.3 + p);
+    const offset = [
+      f.driftX * easeOut + sway,
+      f.driftY * Math.pow(p, 0.85) + 0.12 * Math.sin(f.age * 2.4 + f.phase),
+      f.driftZ * Math.pow(p, 1.15)
+    ];
+    const tilt = [
+      0.35 * Math.sin(f.age * 1.9 + f.phase) - 0.25 * p,
+      0.42 * Math.cos(f.age * 1.5 + f.phase)
+    ];
+    const spin = f.spinRate * f.age;
+    const alpha = p < 0.72 ? 1.0 : Math.max(0.0, 1.0 - (p - 0.72) / 0.28);
+    const curl = Math.max(0.45, 1.0 - p * 0.45);
+
+    const meshData = buildFeatherMeshData(f.spineUv, f.lengthUv, curl, offset, tilt, spin, alpha);
+    gl.bindBuffer(gl.ARRAY_BUFFER, featherBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, meshData, gl.DYNAMIC_DRAW);
+    drawSolid(
+      { buf: featherBuf, count: meshData.length / 7 },
+      [0.99, 0.995, 1.0],
+      [0.62, 0.84, 1.0],
+      0.96,
+      0.85
+    );
+  }
+
+  // 8. Soft sunlit morning dust motes drifting in the window light
+  gl.depthMask(false);
+  gl.blendFunc(gl.ONE, gl.ONE);
+  let mp = 0;
+  for (let i = 0; i < MOTE_COUNT; i++) {
+    const m = motes[i];
+    const mx = m.x + Math.sin(t * m.speed + m.phase) * 0.22;
+    const my = m.y + Math.cos(t * m.speed * 0.7 + m.phase) * 0.14;
+    const mz = m.z + Math.sin(t * m.speed * 0.5 + m.phase * 1.3) * 0.18;
+    const a = 0.18 + 0.18 * Math.sin(t * 1.1 + m.phase);
+    moteData[mp++] = mx;
+    moteData[mp++] = my;
+    moteData[mp++] = mz;
+    moteData[mp++] = m.size;
+    moteData[mp++] = a;
+  }
+  gl.useProgram(moteProg);
+  gl.uniformMatrix4fv(moteU.uVP, false, vpMat);
+  gl.uniform1f(moteU.uScale, dpr * 4.2);
+  gl.bindBuffer(gl.ARRAY_BUFFER, moteBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, moteData, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(motPosLoc);
+  gl.enableVertexAttribArray(motSizeLoc);
+  gl.enableVertexAttribArray(motAlphaLoc);
+  gl.vertexAttribPointer(motPosLoc, 3, gl.FLOAT, false, 20, 0);
+  gl.vertexAttribPointer(motSizeLoc, 1, gl.FLOAT, false, 20, 12);
+  gl.vertexAttribPointer(motAlphaLoc, 1, gl.FLOAT, false, 20, 16);
+  gl.drawArrays(gl.POINTS, 0, MOTE_COUNT);
+  gl.disableVertexAttribArray(motPosLoc);
+  gl.disableVertexAttribArray(motSizeLoc);
+  gl.disableVertexAttribArray(motAlphaLoc);
+  gl.depthMask(true);
+
+  requestAnimationFrame(frame);
+}
+
+// Blank 2x2 black texture for uncut flyleaf
+const blankCanvas = document.createElement('canvas');
+blankCanvas.width = 2; blankCanvas.height = 2;
+const bCtx = blankCanvas.getContext('2d');
+bCtx.fillStyle = '#000'; bCtx.fillRect(0, 0, 2, 2);
+const blankTex = createDynamicTexture(blankCanvas);
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

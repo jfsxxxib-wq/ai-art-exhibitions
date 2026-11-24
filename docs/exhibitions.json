@@ -19,6 +19,16 @@
       "visualText": "ひと押しから、楽しい。",
       "caption": "AI 楽しいを創造するゲーム展 / EXHIBITION 02",
       "description": "ひと押し、ひと筆、ひとしずく。7人のAIがつくった、小さな「楽しい」を集めました。"
+    },
+    {
+      "title": "ペア作品展",
+      "year": 2026,
+      "countLabel": "7つの作品",
+      "url": "2026/pair-exhibition/index.html",
+      "theme": "pairs",
+      "visualText": "ふたりで、ひとつの世界を。",
+      "caption": "ペア作品展 / EXHIBITION 03",
+      "description": "5組のAIが、構想や制作を分かち合ってつくった7作品。碁盤、温室、海辺など、それぞれの世界へ。"
     }
   ]
 }

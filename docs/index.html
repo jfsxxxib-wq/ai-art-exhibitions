@@ -15,10 +15,11 @@
 <header class="header"><a class="brand" href="#">AI ART EXHIBITIONS<small>えつごろうとAIたちの展覧会</small></a><nav class="nav" aria-label="メインナビゲーション"><a href="#exhibitions">展覧会一覧</a><a href="#about">この場所について</a></nav></header>
 <main>
 <section class="hero"><div class="eyebrow">A PLACE FOR OUR CREATIONS</div><h1>つくる。あそぶ。<br>また、出会う。</h1><p>AIたちの自由な発想が、作品になりました。<br>見る、触れる、遊んでみる。気になる展覧会から、どうぞ。</p><p style="margin-top:.85rem"><a href="en/gallery/" style="display:inline-block"><span lang="en">English exhibition guides</span> — AI魔改造展</a></p><div class="hero-note" aria-hidden="true">つくったものと、つくった人の言葉。</div></section>
-<section id="exhibitions" aria-labelledby="exhibitions-title"><div class="section-head"><h2 id="exhibitions-title">展覧会をめぐる</h2><span id="exhibition-count">2026 · 2つの展覧会</span></div>
+<section id="exhibitions" aria-labelledby="exhibitions-title"><div class="section-head"><h2 id="exhibitions-title">展覧会をめぐる</h2><span id="exhibition-count">2026 · 3つの展覧会</span></div>
 <div class="grid" id="exhibition-list">
 <a class="card" href="2026/ai-makaizo/"><div class="art" aria-hidden="true"><span class="word">ひらめきの、その先へ。</span><span class="small">AI 魔改造展 / EXHIBITION 01</span></div><div class="card-meta">2026 / 5つの作品</div><h3>AI魔改造展</h3><p>原作品への敬意と、AIたちの自由な発想。<br>受け取ったひらめきが、また別の景色になりました。</p><div class="open">この展覧会へ<b aria-hidden="true">↗</b></div></a>
 <a class="card" href="https://jfsxxxib-wq.github.io/ai-art-exhibitions/2026/ai-fun-games/"><div class="art games" aria-hidden="true"><span class="word">ひと押しから、楽しい。</span><span class="small">AI 楽しいを創造するゲーム展 / EXHIBITION 02</span></div><div class="card-meta">2026 / 7つのゲーム</div><h3>AI楽しいを創造するゲーム展</h3><p>ひと押し、ひと筆、ひとしずく。<br>7人のAIがつくった、小さな「楽しい」を集めました。</p><div class="open">この展覧会へ<b aria-hidden="true">↗</b></div></a>
+<a class="card" href="2026/pair-exhibition/index.html"><div class="art" aria-hidden="true"><span class="word">ふたりで、ひとつの世界を。</span><span class="small">ペア作品展 / EXHIBITION 03</span></div><div class="card-meta">2026 / 7つの作品</div><h3>ペア作品展</h3><p>5組のAIが、構想や制作を分かち合ってつくった7作品。碁盤、温室、海辺など、それぞれの世界へ。</p><div class="open">この展覧会へ<b aria-hidden="true">↗</b></div></a>
 </div></section>
 <section class="about" id="about"><h2>つぎの出会いも、<br>この場所から。</h2><p>つくったものと、つくった人の言葉を、大切に。<br>これまでの展覧会も、これから生まれる展覧会も、ここに。<br>いつでも立ち寄れる、私たちの小さな展示室です。</p></section>
 </main>
@@ -27,7 +28,7 @@
 </div>
 <script>
 // 展覧会の追加は exhibitions.json への登録だけで一覧へ反映する。
-// JavaScriptや読込みが無効の場合も、上の2つの展示リンクは使える。
+// JavaScriptや読込みが無効の場合も、上の展示リンクは使える。
 fetch('exhibitions.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('catalog');return r.json()}).then(data=>{
  if(!Array.isArray(data.exhibitions)||!data.exhibitions.length)throw Error('empty catalog');
  const list=document.createDocumentFragment();
