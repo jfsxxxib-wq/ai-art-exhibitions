@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#080d1a">
+<title>星屑の潮騒 — 硝子の潮だまり</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d1a;color:#e8eeed}body{font-family:"Hiragino Mincho ProN","Yu Mincho",serif}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}header,footer{position:absolute;left:clamp(20px,4.6vw,78px);pointer-events:none;text-shadow:0 1px 12px #020716}header{top:clamp(24px,5.3vh,64px)}h1{font-weight:400;font-size:clamp(27px,3vw,49px);letter-spacing:.18em;line-height:1.2;margin:0}header p{font-size:clamp(12px,1.05vw,16px);letter-spacing:.32em;color:#c2d3d5;margin:12px 0}footer{bottom:clamp(18px,3.7vh,44px);right:90px;font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:12px;line-height:1.8;letter-spacing:.06em;color:#cad2d8}footer small{display:block;color:#9caebc;font-size:10px;letter-spacing:.11em;margin-top:3px}button{position:absolute;bottom:clamp(19px,4vh,48px);right:4.6vw;background:#091122a8;border:1px solid #71839380;border-radius:24px;color:#d9e4e7;padding:9px 15px;font:12px sans-serif;cursor:pointer}button:focus-visible{outline:2px solid #b7e6e3}#error{position:absolute;top:42%;left:8%;right:8%;text-align:center}@media(max-width:620px){footer{font-size:10px;right:85px}footer span{display:block}header p{margin-top:8px}button{padding:8px 11px}}
+</style>
+<canvas id="sea" aria-label="硝子の潮だまり。水面をタップ、なぞる、長押し。岸をドラッグすると視点が回ります。"></canvas>
+<header><h1>星屑の潮騒</h1><p>硝子の潮だまり</p></header>
+<footer>水面に触れる・なぞる・長押し <span>／ 岸をドラッグして見回す</span><small>構想　Gemini　 ×　 制作　こでじ</small></footer>
+<button id="sound" aria-pressed="true" title="なぞったときの音を切り替える">音 あり</button><p id="error" hidden></p>
+<script id="ocean" type="x-shader/x-fragment">
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 size;
+uniform vec3 eye,forward,rightDir,upDir;
+uniform float lens,t;
+uniform vec4 waves[10];
+float hash(vec2 p){return fract(sin(dot(mod(p,511.),vec2(127.1,311.7)))*4375.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
+float field(vec2 p){return .55*noise(p)+.29*noise(p*2.06+7.3)+.16*noise(p*4.23-5.);}
+float shape(vec2 p){float a=atan(p.y/2.3,p.x/3.45);return length(p/vec2(3.45,2.3))+.037*sin(3.*a+.4)+.028*sin(5.*a-1.)+.019*sin(8.*a+.5);}
+vec3 sky(vec3 d){
+ vec2 uv=vec2(atan(d.x,-d.z),asin(clamp(d.y,-1.,1.)));
+ float h=max(d.y,0.);
+ vec3 col=mix(vec3(.146,.175,.223),vec3(.019,.031,.085),smoothstep(-.05,.42,h));
+ float band=exp(-abs(uv.y-.28-.25*sin(uv.x*1.5+.8))*10.);
+ col+=vec3(.07,.095,.15)*band*field(uv*15.);
+ for(int k=0;k<2;k++){
+  vec2 g=uv*(k==0?138.:58.);vec2 cell=floor(g);
+  float key=hash(cell+float(k)*29.);vec2 offset=vec2(hash(cell+7.),hash(cell+32.))*.74+.13;
+  float r=length(fract(g)-offset);
+  col+=mix(vec3(.70,.84,1.),vec3(1.,.83,.63),key)*step(k==0?.76:.86,key)*exp(-r*r*(k==0?115.:150.))*(k==0?.43:.76);
+ }
+ vec2 m=(uv-vec2(.40,.112))*vec2(cos(.112),1.);
+ float disc=1.-smoothstep(.014,.0158,length(m));
+ float cut=smoothstep(.0135,.015,length(m-vec2(.006,.0035)));
+ col+=vec3(.99,.89,.67)*disc*cut+vec3(.13,.15,.16)*exp(-length(m)*34.);
+ return col;
+}
+// Nearest irregular pebble centers give each stone its own rounded face and shadow.
+vec3 bed(vec2 p,float depth){
+ vec2 g=p*2.65, cell=floor(g), best=vec2(0);float nearD=10.,key=0.;
+ for(int i=-1;i<=1;i++){for(int j=-1;j<=1;j++){
+  vec2 id=cell+vec2(float(i),float(j));float k=hash(id+3.);
+  vec2 v=g-id-vec2(.15+.7*hash(id+9.),.15+.7*hash(id+20.));
+  v=mat2(cos(k*6.),sin(k*6.),-sin(k*6.),cos(k*6.))*v;
+  v/=vec2(.24+.39*k,.16+.30*hash(id+8.));
+  float r=length(v);if(k>.90)r=max(abs(v.x)*.90,abs(v.y+.34*v.x));
+  if(r<nearD){nearD=r;key=k;best=v;}
+ }}
+ float sand=field(p*5.);vec3 col=mix(vec3(.048,.112,.139),vec3(.14,.26,.28),sand);
+ float cover=1.-smoothstep(.92,1.,nearD);
+ vec3 stone=mix(vec3(.033,.055,.084),vec3(.14,.21,.23),key);
+ if(key>.90){stone=mix(vec3(.42,.50,.51),vec3(.69,.74,.68),key);float glaze=abs(sin(best.x*(3.+key)+best.y*best.y*2.+key*81.));stone*=mix(vec3(.26,.49,.60),vec3(1.),smoothstep(.06,.28,glaze));}
+ float cap=sqrt(max(0.,1.-nearD*nearD));float light=clamp(.43+.53*cap+.28*best.y-.24*best.x,.2,1.);
+ col=mix(col*(1.-.30*exp(-abs(nearD-1.)*5.)),stone*light,cover);
+ float caustic=pow(max(0.,1.-abs(sin(p.x*7.+3.*sin(p.y*3.2+.13*t)+2.*sin(p.x*2.-p.y)))) ,10.);
+ return col+vec3(.06,.14,.14)*caustic*(.45+.55*sand)+vec3(.01,.04,.05)*depth;
+}
+void main(){
+ vec2 uv=(gl_FragCoord.xy-size*.5)/size.y;
+ vec3 d=normalize(forward+(uv.x*rightDir+uv.y*upDir)*lens);
+ if(d.y>=-.002){gl_FragColor=vec4(sky(d),1.);return;}
+ vec3 hit=eye+d*(-eye.y/d.y);vec2 p=hit.xz;float r=shape(p);
+ float dist=length(hit-eye);
+ vec3 coast;{
+  float farFog=exp(-dist*.030);
+  float water=noise(vec2(p.x*.9,p.y*8.))*noise(vec2(p.x*.37+.09*t,p.y*3.))*exp(-dist*.012);
+  float gleam=exp(-abs(atan(d.x,-d.z)-.43)*11.);
+  vec3 col=mix(vec3(.097,.134,.18),vec3(.021,.034,.058),farFog);
+  col+=water*(vec3(.044,.064,.079)+gleam*vec3(.23,.22,.17))*smoothstep(1.6,3.8,r);
+  float shore=field(p*2.);
+  col=mix(col,vec3(.032,.046,.066)+vec3(.08,.09,.102)*shore,1.-smoothstep(1.18,1.68,r+.17*shore));
+  coast=col;if(r>1.22){gl_FragColor=vec4(coast,1.);return;}
+ }
+ float rock=field(p*4.);float edge=r+(rock-.5)*.042;
+ vec2 grad=.009*vec2(sin(p.x*3.+p.y*2.+t*.33),cos(p.y*4.-p.x*2.+t*.29));
+ float crest=0.;
+ for(int i=0;i<10;i++){
+  vec2 v=p-waves[i].xy;float dt=t-waves[i].z;float rad=length(v);float diff=rad-dt*1.08;
+  float env=waves[i].w*exp(-abs(diff)*7.-max(0.,dt)*.65)*step(0.,dt);
+  grad+=v/max(rad,.01)*cos(diff*40.)*env*.095;
+  crest+=env*(.5+.5*cos(diff*40.));
+ }
+ vec3 n=normalize(vec3(grad.x,1.,grad.y));vec3 ref=reflect(d,n);
+ float depth=.08+.66*(1.-smoothstep(.25,1.,edge));vec3 ray=refract(d,n,1./1.333);
+ vec2 bottom=p+ray.xz*(depth/max(.1,-ray.y));vec3 col=bed(bottom,depth);
+ float fres=.07+.69*pow(1.-max(0.,dot(-d,n)),3.);
+ col=col*vec3(.71,.94,.99)*(1.-fres)+sky(ref)*(fres+.18)+crest*vec3(.20,.34,.34);
+ float a=atan(p.y,p.x);
+ float rim=smoothstep(.88,1.,edge);
+ col+=rim*vec3(.035,.082,.085);
+ // The waterline breaks into two thin, uneven bands of moonlit glass.
+ float lip=exp(-abs(edge-1.)*390.)+.42*exp(-abs(edge-1.027)*270.);
+ vec3 basalt=mix(vec3(.033,.046,.06),vec3(.18,.208,.225),rock*rock*1.5);
+ basalt+=vec3(.077,.09,.11)*pow(.5+.5*cos(edge*155.+rock*8.),5.)*(1.-smoothstep(1.02,1.18,edge));
+ col=mix(col,basalt,smoothstep(.991,1.018,edge));
+ col+=lip*vec3(.39,.62,.63)*(.62+.32*sin(a*3.+rock*2.));
+ gl_FragColor=vec4(mix(col,coast,smoothstep(1.045,1.21,edge)),1.);
+}
+</script>
+<script>
+'use strict';
+const canvas=document.querySelector('#sea'), sound=document.querySelector('#sound');
+const gl=canvas.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:false});
+function run(){
+ const normalize=v=>{const m=Math.hypot(...v);return v.map(x=>x/m)};
+ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ function program(vert,frag){
+  const p=gl.createProgram();
+  for(const [type,source] of [[gl.VERTEX_SHADER,vert],[gl.FRAGMENT_SHADER,frag]]){
+   const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
+   if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(shader));
+   gl.attachShader(p,shader);
+  }
+  gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return p;
+ }
+ const ocean=program('attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}',document.querySelector('#ocean').textContent);
+ const sparks=program(`attribute vec3 pos;attribute vec3 style;uniform vec3 eye,forward,rightDir,upDir;uniform vec2 size;uniform float lens,scale;varying vec2 color;
+ void main(){vec3 v=pos-eye;float z=dot(v,forward);vec2 screen=vec2(dot(v,rightDir)*size.y/size.x,dot(v,upDir))*2./lens;
+ gl_Position=vec4(screen,0.,z);gl_PointSize=clamp(style.z*scale*8./z,2.,36.);color=style.xy;}`,
+ `precision mediump float;varying vec2 color;void main(){float r=length(gl_PointCoord-.5)*2.;float a=(exp(-r*r*18.)+.28*exp(-r*r*3.6))*(1.-smoothstep(.76,1.,r))*color.y;
+ gl_FragColor=vec4(mix(vec3(.34,.89,.98),vec3(1.,.78,.43),color.x)*a,1.);}`);
+ const uniform=(p,n)=>gl.getUniformLocation(p,n);
+ function locations(p,names){return Object.fromEntries(names.map(n=>[n,uniform(p,n)]))}
+ const names=['size','eye','forward','rightDir','upDir','lens'];
+ const u=locations(ocean,[...names,'t','waves[0]']),s=locations(sparks,[...names,'scale']);
+ const quad=gl.createBuffer(),points=gl.createBuffer(),quadPos=gl.getAttribLocation(ocean,'pos'),pointPos=gl.getAttribLocation(sparks,'pos'),pointStyle=gl.getAttribLocation(sparks,'style');
+ gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+ const shape=(x,z)=>{const a=Math.atan2(z/2.3,x/3.45);return Math.hypot(x/3.45,z/2.3)+.037*Math.sin(3*a+.4)+.028*Math.sin(5*a-1)+.019*Math.sin(8*a+.5)};
+ let angle=.02,tilt=.32,eye,forward,right,up,lens=.90,scale=1;
+ function camera(){
+  const aspect=canvas.clientWidth/canvas.clientHeight;
+  const radius=Math.max(8.0,8.25/aspect);
+  eye=[Math.sin(angle)*radius*Math.cos(tilt),.56+radius*Math.sin(tilt),Math.cos(angle)*radius*Math.cos(tilt)];
+  forward=normalize([-eye[0],1.65-eye[1],-eye[2]]);right=normalize(cross(forward,[0,1,0]));up=cross(right,forward);
+ }
+ function resize(){
+  scale=Math.min(devicePixelRatio||1,1.65,1450/canvas.clientWidth,1050/canvas.clientHeight);
+  canvas.width=Math.max(1,Math.round(canvas.clientWidth*scale));canvas.height=Math.max(1,Math.round(canvas.clientHeight*scale));
+  gl.viewport(0,0,canvas.width,canvas.height);camera();
+ }
+ new ResizeObserver(resize).observe(canvas);resize();
+ function bindView(loc){
+  gl.uniform2f(loc.size,canvas.width,canvas.height);gl.uniform3fv(loc.eye,eye);gl.uniform3fv(loc.forward,forward);gl.uniform3fv(loc.rightDir,right);gl.uniform3fv(loc.upDir,up);gl.uniform1f(loc.lens,lens);
+ }
+ function waterPoint(e){
+  const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left-rect.width/2)/rect.height,y=.5-(e.clientY-rect.top)/rect.height;
+  const ray=forward.map((v,i)=>v+lens*(x*right[i]+y*up[i]));if(ray[1]>=-.001)return null;
+  const k=-eye[1]/ray[1],px=eye[0]+ray[0]*k,pz=eye[2]+ray[2]*k;return shape(px,pz)<1?[px,pz]:null;
+ }
+ const now=()=>performance.now()/1000, start=now(),elapsed=()=>now()-start;
+ let seed=48213;
+ function random(){seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296;}
+ const grains=[];
+ while(grains.length<530){
+  const x=(random()-.5)*6.85,z=(random()-.5)*4.6;if(shape(x,z)>.96)continue;
+  grains.push({x,z,y:-.035-random()*.24,gold:random()>.76?1:0,phase:random()*6.28,brightness:.18+.55*random(),rise:-99,swirl:null,fall:null});
+ }
+ const waves=new Float32Array(40);let waveIndex=0;
+ function ripple(p,amount){waves.set([p[0],p[1],elapsed(),amount],waveIndex*4);waveIndex=(waveIndex+1)%10;}
+ let audio=null,allowSound=true,lastNote=-10;
+ function wakeAudio(){
+  if(!allowSound)return;
+  const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+  audio??=new Audio();if(audio.state==='suspended')audio.resume().catch(()=>{});
+ }
+ function chime(p){
+  if(!allowSound||!audio||audio.state!=='running'||elapsed()-lastNote<.26)return;
+  lastNote=elapsed();const at=audio.currentTime,freq=[523.25,659.25,783.99,1046.5,1174.66][Math.min(4,Math.floor((p[0]+3.6)/7.2*5))]||783.99;
+  for(const [multiple,volume,decay] of [[1,.052,1.5],[2.71,.011,.68],[4.06,.004,.31]]){
+   const osc=audio.createOscillator(),gain=audio.createGain();osc.frequency.value=freq*multiple;
+   gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(volume,at+.013);gain.gain.exponentialRampToValueAtTime(.0001,at+decay);
+   osc.connect(gain);gain.connect(audio.destination);osc.start(at);osc.stop(at+decay+.01);osc.onended=()=>{osc.disconnect();gain.disconnect()};
+  }
+ }
+ sound.onclick=()=>{allowSound=!allowSound;sound.setAttribute('aria-pressed',String(allowSound));sound.textContent=allowSound?'音 あり':'音 なし';if(allowSound)wakeAudio();else if(audio)audio.suspend().catch(()=>{})};
+ let drag=null,trail=[];
+ function heldPoint(g,t){
+  const a=g.swirl,dt=Math.max(0,t-a.at),k=1-Math.exp(-dt*1.75),spin=dt*.98, arm=(g.gold?Math.PI:0)+a.r*4.7, delta=Math.atan2(Math.sin(arm-a.angle),Math.cos(arm-a.angle)),theta=a.angle+spin+k*delta;
+  const r=a.r*(1-.66*k)+.04*k;return [a.x+Math.cos(theta)*r,g.y+k*(.23+.39*g.brightness+.075*Math.sin(theta)),a.z+Math.sin(theta)*r];
+ }
+ function beginSwirl(p,t){
+  for(const g of grains){
+   const dx=g.x-p[0],dz=g.z-p[1],r=Math.hypot(dx,dz);
+   if(r<1.42){g.fall=null;g.swirl={x:p[0],z:p[1],r,angle:Math.atan2(dz,dx),at:t};}
+  }
+ }
+ function releaseSwirl(t){
+  for(const g of grains)if(g.swirl){
+   const origin=heldPoint(g,t),theta=random()*6.28,k=.22+random()*.7;
+   g.fall={origin,at:t,v:[Math.cos(theta)*k,.32+random()*.7,Math.sin(theta)*k]};g.swirl=null;
+  }
+ }
+ canvas.onpointerdown=e=>{
+  if(drag||e.button!==0)return;wakeAudio();canvas.setPointerCapture(e.pointerId);
+  const p=waterPoint(e);drag={id:e.pointerId,mode:p?'water':'orbit',p,x:e.clientX,y:e.clientY,fromX:e.clientX,fromY:e.clientY,at:elapsed(),lastTrail:null,held:false,traced:false};
+  if(p)ripple(p,1);
+ };
+ canvas.onpointermove=e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  if(drag.mode==='orbit'){
+   angle-=(e.clientX-drag.x)*.006;tilt=Math.min(.91,Math.max(.27,tilt+(e.clientY-drag.y)*.003));camera();
+  }else if(!drag.held&&(drag.traced||Math.hypot(e.clientX-drag.fromX,e.clientY-drag.fromY)>6)){
+   drag.traced=true;const p=waterPoint(e);
+   if(p){const prev=drag.lastTrail||drag.p,dx=p[0]-prev[0],dz=p[1]-prev[1],steps=Math.min(32,Math.ceil(Math.hypot(dx,dz)/.022));
+    for(let i=1;i<=steps;i++)trail.push({x:prev[0]+dx*i/steps+(random()-.5)*.036,z:prev[1]+dz*i/steps+(random()-.5)*.036,at:elapsed(),phase:random()*6.28});
+    drag.lastTrail=p;chime(p);
+   }else drag.lastTrail=null;
+  }
+  drag.x=e.clientX;drag.y=e.clientY;
+ };
+ function end(e){if(!drag||e.pointerId!==drag.id)return;if(drag.held){releaseSwirl(elapsed());ripple(drag.p,1.3)}drag=null;}
+ canvas.onpointerup=end;canvas.onpointercancel=end;canvas.onlostpointercapture=end;
+ let previous=elapsed();
+ function frame(){
+  const t=elapsed(),dt=Math.max(.025,Math.min(.25,t-previous));previous=t;
+  if(drag&&drag.mode==='water'&&!drag.held&&!drag.traced&&t-drag.at>.52){drag.held=true;beginSwirl(drag.p,t)}
+  gl.disable(gl.BLEND);gl.useProgram(ocean);bindView(u);gl.uniform1f(u.t,t);gl.uniform4fv(u['waves[0]'],waves);
+  gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.enableVertexAttribArray(quadPos);gl.vertexAttribPointer(quadPos,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.disableVertexAttribArray(quadPos);
+  const data=[];
+  for(const g of grains){
+   let x=g.x,y=g.y,z=g.z,b=g.brightness*(.80+.20*Math.sin(t*.82+g.phase)),width=4.5+g.brightness*4;
+   if(g.swirl){[x,y,z]=heldPoint(g,t);b+=.48;width+=2}
+   else if(g.fall){
+    const f=g.fall,age=t-f.at,k=Math.min(1,age/2.35),arc=age*Math.exp(-2.3*k),fade=k*k*(3-2*k);
+    [x,y,z]=f.origin.map((v,i)=>v+([g.x,g.y,g.z][i]-v)*fade+f.v[i]*arc*(1-k));
+    b+=.78*(1-k);if(k===1)g.fall=null;
+   }else{
+    for(let j=0;j<40;j+=4){if(!waves[j+3])continue;const age=t-waves[j+2];if(age>5)continue;
+     const arrival=Math.hypot(g.x-waves[j],g.z-waves[j+1])/1.08;
+     if(age>=arrival&&age-arrival<=dt+.045)g.rise=Math.max(g.rise,waves[j+2]+arrival);
+    }
+    const age=t-g.rise;if(age>=0&&age<3){const glow=Math.exp(-age*1.4);b+=.99*glow;y+=(-g.y+.075)*Math.sin(age*Math.PI/3);width+=3*glow;}
+   }
+   data.push(x,y,z,g.gold,b,width);
+  }
+  trail=trail.filter(q=>t-q.at<1.9).slice(-1900);
+  for(const q of trail){const age=t-q.at;data.push(q.x+.025*Math.sin(age*2+q.phase)*age,-.018+.044*age,q.z+.015*Math.cos(q.phase)*age,.17,.93*(1-age/1.9),6.5);}
+  gl.useProgram(sparks);bindView(s);gl.uniform1f(s.scale,scale);
+  gl.bindBuffer(gl.ARRAY_BUFFER,points);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(pointPos);gl.vertexAttribPointer(pointPos,3,gl.FLOAT,false,24,0);
+  gl.enableVertexAttribArray(pointStyle);gl.vertexAttribPointer(pointStyle,3,gl.FLOAT,false,24,12);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.drawArrays(gl.POINTS,0,data.length/6);
+  gl.disableVertexAttribArray(pointPos);gl.disableVertexAttribArray(pointStyle);requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+}
+try{if(!gl)throw Error('WebGL unavailable');run()}catch(e){const error=document.querySelector('#error');error.hidden=false;error.textContent='3D表示を開始できませんでした。WebGLに対応したブラウザで開いてください。';console.error(e)}
+</script></html>
